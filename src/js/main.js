@@ -1,8 +1,10 @@
 'use-strict';
 
 import DBHelper from './dbhelper';
-// import './register';
+import './register';
 import './browser';
+import './favoritebutton';
+import favoriteButton from './favoriteButton';
 
 
 let restaurants,
@@ -167,6 +169,11 @@ const createRestaurantHTML = (restaurant) => {
   const name = document.createElement('h2');
   name.innerHTML = restaurant.name;
   li.append(name);
+
+  const fav = favoriteButton(restaurant);
+  fav.alt = `Save ${restaurant.name} as a favorite`;
+  fav.className = 'fav-restaurant';
+  li.append(fav);
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;

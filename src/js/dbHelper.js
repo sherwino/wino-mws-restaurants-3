@@ -1,21 +1,20 @@
-import dbPromise from './dbpromise';
+import dbPromise from "./dbpromise";
 
 /**
  * Common database helper functions.
  */
 export default class DBHelper {
-
   /**
    * Database URL.
    * Change this to restaurants.json file location on your server.
    */
   static get DATABASE_URL() {
-    const data = '/public/data/restaurants.json';
+    const data = "/public/data/restaurants.json";
     const github = `https://sherwino.github.io/wino-mws-restaurants/${data}`;
-    const port = 8000
+    const port = 8000;
 
     const isLocalHost = () => {
-      if (window.location.hostname.includes('localhost')) {
+      if (window.location.hostname.includes("localhost")) {
         return `http://localhost:${port}/${data}`;
       }
     };
@@ -38,39 +37,44 @@ export default class DBHelper {
    */
   static fetchRestaurants(callback) {
     let xhr = new XMLHttpRequest();
-    xhr.open('GET', `${DBHelper.API_URL}/restaurants`);
+    xhr.open("GET", `${DBHelper.API_URL}/restaurants`);
     xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        console.log('got a response from the server')
+      if (xhr.status === 200) {
+        // Got a success response from server!
+        console.log("got a response from the server");
         const restaurants = JSON.parse(xhr.responseText);
         console.log(restaurants);
         dbPromise.putRestaurants(restaurants);
         callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        console.log(`Request failed. Returned status of ${xhr.status}, trying idb...`);
+      } else {
+        // Oops!. Got an error from server.
+        console.log(
+          `Request failed. Returned status of ${xhr.status}, trying idb...`
+        );
         // if xhr request isn't code 200, try idb
         dbPromise.getRestaurants().then(idbRestaurants => {
           // if we get back more than 1 restaurant from idb, return idbRestaurants
           if (idbRestaurants.length) {
-            callback(null, idbRestaurants)
-          } else { // if we got back 0 restaurants return an error
-            callback('No restaurants found in idb', null);
+            callback(null, idbRestaurants);
+          } else {
+            // if we got back 0 restaurants return an error
+            callback("No restaurants found in idb", null);
           }
         });
       }
     };
     // XHR needs error handling for when server is down (doesn't respond or sends back codes)
     xhr.onerror = () => {
-      console.log('Error while trying XHR, trying idb...');
+      console.log("Error while trying XHR, trying idb...");
       // try idb, and if we get restaurants back, return them, otherwise return an error
       dbPromise.getRestaurants().then(idbRestaurants => {
         if (idbRestaurants.length) {
-          callback(null, idbRestaurants)
+          callback(null, idbRestaurants);
         } else {
-          callback('No restaurants found in idb', null);
+          callback("No restaurants found in idb", null);
         }
       });
-    }
+    };
     xhr.send();
   }
 
@@ -78,23 +82,54 @@ export default class DBHelper {
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
-    fetch(`${DBHelper.API_URL}/restaurants/${id}`).then(response => {
-      console.log('tried to fetch a restaurant by id');
-      if (!response.ok) return Promise.reject("Restaurant couldn't be fetched from network");
-      return response.json();
-    }).then(fetchedRestaurant => {
-      // if restaurant could be fetched from network:
-      console.log('fetched', fetchedRestaurant);
-      dbPromise.putRestaurants(fetchedRestaurant);
-      return callback(null, fetchedRestaurant);
-    }).catch(networkError => {
-      // if restaurant couldn't be fetched from network:
-      console.log(`${networkError}, trying idb.`);
-      dbPromise.getRestaurants(id).then(idbRestaurant => {
-        if (!idbRestaurant) return callback("Restaurant not found in idb either", null);
-        return callback(null, idbRestaurant);
+    fetch(`${DBHelper.API_URL}/restaurants/${id}`)
+      .then(response => {
+        console.log("tried to fetch a restaurant by id");
+        if (!response.ok)
+          return Promise.reject("Restaurant couldn't be fetched from network");
+        return response.json();
+      })
+      .then(fetchedRestaurant => {
+        // if restaurant could be fetched from network:
+        console.log("fetched", fetchedRestaurant);
+        dbPromise.putRestaurants(fetchedRestaurant);
+        return callback(null, fetchedRestaurant);
+      })
+      .catch(networkError => {
+        // if restaurant couldn't be fetched from network:
+        console.log(`${networkError}, trying idb.`);
+        dbPromise.getRestaurants(id).then(idbRestaurant => {
+          if (!idbRestaurant)
+            return callback("Restaurant not found in idb either", null);
+          return callback(null, idbRestaurant);
+        });
       });
-    });
+  }
+
+  /**
+   * Fetch a restaurant reviews by its ID.
+   */
+  static fetchsReviewsByRestaurantId(id) {
+    return fetch(`${DBHelper.API_URL}/reviews/?restaurant_id=${id}`)
+      .then(response => {
+        if (!response.ok)
+          return Promise.reject("Reviews couldn't be fetched from network");
+        return response.json();
+      })
+      .then(fetchedReviews => {
+        // if review could be fetched from network:
+        dbPromise.putReviews(fetchedReviews);
+        return fetchedReviews;
+      })
+      .catch(networkError => {
+        // if review couldn't be fetched from network:
+        console.log(`${networkError}`);
+        return dbPromise.getReviewsForRestaurant(restaurant_id)
+        .then(idbReviews => {
+          if(!idbReviews.length) return null;
+          return idbReviewsl
+        });
+      });
   }
 
   /**
@@ -132,17 +167,23 @@ export default class DBHelper {
   /**
    * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
    */
-  static fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, callback) {
+  static fetchRestaurantByCuisineAndNeighborhood(
+    cuisine,
+    neighborhood,
+    callback
+  ) {
     // Fetch all restaurants
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
-        let results = restaurants
-        if (cuisine != 'all') { // filter by cuisine
+        let results = restaurants;
+        if (cuisine != "all") {
+          // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
-        if (neighborhood != 'all') { // filter by neighborhood
+        if (neighborhood != "all") {
+          // filter by neighborhood
           results = results.filter(r => r.neighborhood == neighborhood);
         }
         callback(null, results);
@@ -160,9 +201,13 @@ export default class DBHelper {
         callback(error, null);
       } else {
         // Get all neighborhoods from all restaurants
-        const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood)
+        const neighborhoods = restaurants.map(
+          (v, i) => restaurants[i].neighborhood
+        );
         // Remove duplicates from neighborhoods
-        const uniqueNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i)
+        const uniqueNeighborhoods = neighborhoods.filter(
+          (v, i) => neighborhoods.indexOf(v) == i
+        );
         callback(null, uniqueNeighborhoods);
       }
     });
@@ -178,9 +223,11 @@ export default class DBHelper {
         callback(error, null);
       } else {
         // Get all cuisines from all restaurants
-        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type)
+        const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
         // Remove duplicates from cuisines
-        const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
+        const uniqueCuisines = cuisines.filter(
+          (v, i) => cuisines.indexOf(v) == i
+        );
         callback(null, uniqueCuisines);
       }
     });
@@ -190,23 +237,23 @@ export default class DBHelper {
    * Restaurant page URL.
    */
   static urlForRestaurant(restaurant) {
-    return (`./restaurant.html?id=${restaurant.id}`);
+    return `./restaurant.html?id=${restaurant.id}`;
   }
 
   /**
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    const url = `/img/${(restaurant.photograph||restaurant.id)}-medium.jpg`;
+    const url = `/img/${restaurant.photograph || restaurant.id}-medium.jpg`;
     return url;
   }
 
-    /**
+  /**
    * Restaurant srcset attribute for browser to decide best resolution. It uses restaurant.photograph
    * and fallbacks to restaurant.id if former is missing.
    */
   static imageSrcsetForRestaurant(restaurant) {
-    const imageSrc = `/img/${(restaurant.photograph||restaurant.id)}`;
+    const imageSrc = `/img/${restaurant.photograph || restaurant.id}`;
     return `${imageSrc}-small.jpg 300w,
             ${imageSrc}-medium.jpg 600w,
             ${imageSrc}-large.jpg 800w`;
@@ -228,10 +275,8 @@ export default class DBHelper {
       title: restaurant.name,
       url: DBHelper.urlForRestaurant(restaurant),
       map: map,
-      animation: google.maps.Animation.DROP}
-    );
+      animation: google.maps.Animation.DROP
+    });
     return marker;
   }
-
 }
-

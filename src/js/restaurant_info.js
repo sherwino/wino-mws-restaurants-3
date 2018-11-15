@@ -1,8 +1,9 @@
 'use-strict';
 
 import DBHelper from './dbhelper';
-// import './register';
+import './register';
 import './browser';
+import reviewForm from './reviewform';
 
 
 let restaurant = '';
@@ -67,6 +68,10 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
+  // const favButtonContainer = document.getElementById('fav-button-container');
+  // favButtonContainer.appendChild(favoriteButton(restaurant));
+  // favButtonContainer.alt = `Save ${restaurant.name} as a favorite`;
+
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
@@ -85,7 +90,8 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  DBHelper.fetchsReviewsByRestaurantId(restaurant.id)
+  .then(fillReviewsHTML());
 }
 
 /**
@@ -122,16 +128,21 @@ const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';
     container.appendChild(noReviews);
-    return;
+  } else {
+    const ul = document.getElementById('reviews-list');
+    reviews.forEach(review => {
+      ul.appendChild(createReviewHTML(review));
+    });
+    ul.setAttribute('tabindex', '0');
+    ul.setAttribute('aria-label', `List of restaurant reviews for ${self.restaurant.name}`);
+    container.appendChild(ul);
   }
-  const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
-  });
 
-  ul.setAttribute('tabindex', '0');
-  ul.setAttribute('aria-label', `List of restaurant reviews for ${self.restaurant.name}`);
-  container.appendChild(ul);
+  const head = document.createElement('h3');
+  head.innerHTML = "Leave a Review";
+  container.appendChild(head);
+  const id = getParameterByName('id');
+  container.appendChild(reviewForm(id));
 }
 
 /**
@@ -144,6 +155,7 @@ const createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
+  date.innerHTML = new Date(review.createdAt).toLocaleDateString();
   date.innerHTML = review.date;
   li.appendChild(date);
 
