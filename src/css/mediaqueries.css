@@ -1,0 +1,114 @@
+/* ====================== 1600px && above (index.html) ====================== */
+@media screen and (min-width: 1676px) {
+  #restaurants-list {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+}
+
+/* ====================== 816px to 1200px (index.html) ====================== */
+
+@media screen and (min-width: 816px) and (max-width: 1200px) {
+  #restaurants-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ====================== 815px && below (index.html) ====================== */
+
+@media screen and (max-width: 815px) {
+  #restaurants-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ====================== 415px && below (index.html) ====================== */
+
+@media screen and (max-width: 415px) {
+  #header a {
+    font-size: 5vw;
+    line-height: 0;    
+
+  }
+
+  #restaurants-list li {
+    width: 15rem;
+    transition: width 0.5s ease-in-out;
+  }
+
+  #restaurants-list .restaurant-img {
+    max-width: 100%;
+    min-height: 30%;
+    min-width: 60%;
+  }
+
+  .filter-options {
+    flex-direction: column;
+    height: 100px;
+    padding: 1rem 0;
+    transition: 1s;
+  }
+}
+
+/* ====================== 310px && below (index.html) ====================== */
+
+@media screen and (max-width: 310px) {
+  #restaurants-list li {
+    width: 10rem;
+    transition: width 0.5s ease-in-out;
+  }
+
+  #restaurants-list .restaurant-img {
+    max-width: 100%;
+    min-height: 20%;
+    min-width: 40%;
+  }
+}
+
+/* ====================== 900px && below (restaurant.html) ====================== */
+@media screen and (min-width: 900px) {
+  #maincontent {
+    grid-template-areas:
+      "header header"
+      "restaurant  map"
+      "reviews  map";
+    grid-template-columns: 1fr 1fr;
+    transition: all 0.2s ease-in;
+  }
+}
+
+/* ====================== 899px && below (restaurant.html) ====================== */
+
+@media screen and (max-width: 899px) {
+  #maincontent {
+    grid-template-areas:
+      "header"
+      "restaurant"
+      "map"
+      "reviews";
+    grid-template-columns: 1fr;
+  }
+
+  #detail-map-container {
+    margin: 0;
+    position: relative;
+    height: 50vh;
+    padding: 2% 5%;
+    width: 100%;
+  }
+
+  #restaurant-container,
+  #reviews-container,
+  #reviews-list li,
+  #breadcrumb {
+    width: 100%;
+  }
+}
+
+/* ====================== 415px && below (restaurant.html) ====================== */
+
+@media screen and (max-width: 415px) {
+  #detail-header a {
+    font-size: 5vw;
+    line-height: 0;    
+  }
+}

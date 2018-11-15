@@ -1,0 +1,67 @@
+{
+  "name": "mws-restaurant-stage-2",
+  "version": "2.0.0",
+  "description": "Node is being initialized for linting purposes",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/register": "^7.0.0",
+    "ansi-colors": "^3.1.0",
+    "babelify": "^10.0.0",
+    "browser-sync": "^2.26.0",
+    "browserify": "^16.2.3",
+    "del": "^3.0.0",
+    "eslint": "^5.6.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "fancy-log": "^1.3.2",
+    "gulp": "^3.9.1",
+    "gulp-newer": "^1.4.0",
+    "gulp-responsive": "^2.11.0",
+    "gulp-sourcemaps": "^2.6.4",
+    "idb": "^2.1.3",
+    "lodash": "^4.17.11",
+    "merge-stream": "^1.0.1",
+    "run-sequence": "^2.2.1",
+    "sharp": "^0.20.5",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0",
+    "watchify": "^3.11.0"
+  },
+  "scripts": {
+    "lint": "eslint --fix .",
+    "static": "cd src && python -m SimpleHTTPServer 8000",
+    "start": "gulp sync",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sherwino/wino-mws-restaurants-2.git"
+  },
+  "keywords": [
+    "MWS",
+    "Udacity",
+    "Grow",
+    "With",
+    "Google",
+    "Service",
+    "Workers",
+    "HTML",
+    "CSS",
+    "JS",
+    "Src",
+    "Set"
+  ],
+  "author": "sherwino",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sherwino/wino-mws-restaurants-2/issues"
+  },
+  "homepage": "https://github.com/sherwino/wino-mws-restaurants-2#readme"
+}
