@@ -1,4 +1,4 @@
-import dbPromise from './dbPromise';
+import dbPromise from './dbpromise';
 
 /**
  * Common database helper functions.
@@ -41,7 +41,9 @@ export default class DBHelper {
     xhr.open('GET', `${DBHelper.API_URL}/restaurants`);
     xhr.onload = () => {
       if (xhr.status === 200) { // Got a success response from server!
+        console.log('got a response from the server')
         const restaurants = JSON.parse(xhr.responseText);
+        console.log(restaurants);
         dbPromise.putRestaurants(restaurants);
         callback(null, restaurants);
       } else { // Oops!. Got an error from server.
@@ -49,7 +51,7 @@ export default class DBHelper {
         // if xhr request isn't code 200, try idb
         dbPromise.getRestaurants().then(idbRestaurants => {
           // if we get back more than 1 restaurant from idb, return idbRestaurants
-          if (idbRestaurants.length > 0) {
+          if (idbRestaurants.length) {
             callback(null, idbRestaurants)
           } else { // if we got back 0 restaurants return an error
             callback('No restaurants found in idb', null);
@@ -62,7 +64,7 @@ export default class DBHelper {
       console.log('Error while trying XHR, trying idb...');
       // try idb, and if we get restaurants back, return them, otherwise return an error
       dbPromise.getRestaurants().then(idbRestaurants => {
-        if (idbRestaurants.length > 0) {
+        if (idbRestaurants.length) {
           callback(null, idbRestaurants)
         } else {
           callback('No restaurants found in idb', null);
@@ -77,10 +79,12 @@ export default class DBHelper {
    */
   static fetchRestaurantById(id, callback) {
     fetch(`${DBHelper.API_URL}/restaurants/${id}`).then(response => {
+      console.log('tried to fetch a restaurant by id');
       if (!response.ok) return Promise.reject("Restaurant couldn't be fetched from network");
       return response.json();
     }).then(fetchedRestaurant => {
       // if restaurant could be fetched from network:
+      console.log('fetched', fetchedRestaurant);
       dbPromise.putRestaurants(fetchedRestaurant);
       return callback(null, fetchedRestaurant);
     }).catch(networkError => {
@@ -179,30 +183,6 @@ export default class DBHelper {
         const uniqueCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i)
         callback(null, uniqueCuisines);
       }
-    });
-  }
-
-  /**
-   * Fetch reviews per restaurant.
-   */
-  static fetchReviewsByRestaurantId(id) {
-    return fetch(`${DBHelper.API_URL}/reviews/?restaurant_id=${id}`).then(response => {
-      if (!response.ok) return Promise.reject("Reviews couldn't be fetched from network");
-      return response.json();
-    }).then(fetchedReviews => {
-      // if reviews could be fetched from network:
-      // store the reviews in idb
-      dbPromise.putReviews(fetchedReviews);
-      return fetchedReviews;
-    }).catch(networkError => {
-      // if reviews couldn't be fetched from network:
-      console.log(`${networkError}, attempting to get reviews from idb`);
-      return dbPromise.getReviewsForRestaurant(id)
-      .then(idbReviews => {
-        if (!idbReviews.length) return null;
-
-        return idbReviews;
-      });
     });
   }
 

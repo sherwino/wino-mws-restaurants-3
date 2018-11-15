@@ -1,8 +1,8 @@
 'use-strict';
 
-import DBHelper from './dbHelper';
-import './js/register';
-import favoriteButton from './favoriteButton';
+import DBHelper from './dbhelper';
+// import './register';
+import './browser';
 
 
 let restaurants,
@@ -78,30 +78,6 @@ const fillCuisinesHTML = (cuisines = self.cuisines) => {
   });
 }
 
-const initMap = () => {
-  let loc = {
-    lat: 40.722216,
-    lng: -73.987501
-  };
-  map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 12,
-    center: loc,
-    scrollwheel: false
-  });
-  updateRestaurants();
-
-// Google map makes a bunch of links that steal focus of a screen reader
-// Going to add an event that sets attribute to all of these items
-const mapEl = document.getElementById('map');
-mapEl.addEventListener("keydown", () => {
-  const mapLinks = mapEl.querySelectorAll('a');
-  mapLinks.forEach(link => link.setAttribute('tabindex', '-1'));
-});
-  
-}
-
-
-
 /**
  * Update page and map for current restaurants.
  */
@@ -125,6 +101,28 @@ const updateRestaurants = () => {
   })
 }
 
+window.initMap = () => {
+  let loc = {
+    lat: 40.722216,
+    lng: -73.987501
+  };
+  newMap = new google.maps.Map(document.getElementById('map'), {
+    zoom: 12,
+    center: loc,
+    scrollwheel: false
+  });
+  updateRestaurants();
+
+// Google map makes a bunch of links that steal focus of a screen reader
+// Going to add an event that sets attribute to all of these items
+const mapEl = document.getElementById('map');
+mapEl.addEventListener("keydown", () => {
+  const mapLinks = mapEl.querySelectorAll('a');
+  mapLinks.forEach(link => link.setAttribute('tabindex', '-1'));
+});
+  
+}
+
 /**
  * Clear current restaurants, their HTML and remove their map markers.
  */
@@ -135,9 +133,9 @@ const resetRestaurants = (restaurants) => {
   ul.innerHTML = '';
 
   // Remove all map markers
-  if (self.markers) {
-    self.markers.forEach(marker => marker.setMap(null));
-    self.markers = [];
+  if (markers) {
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
   }
   self.restaurants = restaurants;
 }
@@ -158,7 +156,6 @@ const fillRestaurantsHTML = (restaurants = self.restaurants) => {
  */
 const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
-
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
@@ -171,15 +168,9 @@ const createRestaurantHTML = (restaurant) => {
   name.innerHTML = restaurant.name;
   li.append(name);
 
-  const fav = favoriteButton(restaurant);
-  fav.className = 'fav-restaurant';
-  li.append(fav);
-
-
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);
-
 
   const address = document.createElement('p');
   const addressArray = restaurant.address.split(',')
@@ -216,11 +207,11 @@ const createRestaurantHTML = (restaurant) => {
 const addMarkersToMap = (restaurants = self.restaurants) => {
   restaurants.forEach(restaurant => {
     // Add marker to the map
-    const marker = DBHelper.mapMarkerForRestaurant(restaurant, map);
+    const marker = DBHelper.mapMarkerForRestaurant(restaurant, newMap);
     google.maps.event.addListener(marker, 'click', () => {
       window.location.href = marker.url
     });
-    self.markers.push(marker);
+    markers.push(marker);
   });
 }
 

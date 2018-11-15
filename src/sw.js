@@ -4,6 +4,8 @@ const cacheItems = [
     './css/mediaqueries.css',
     './css/restaurants.css',
     './css/styles.css',
+    './restaurant.html',
+    './index.html'
 ];
 
 // Listen for when worker is installed, then cache

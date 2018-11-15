@@ -1,5 +1,4 @@
 import gulp from 'gulp';
-import responsive from 'gulp-responsive';
 import del from 'del';
 import newer from 'gulp-newer';
 import runSequence from 'run-sequence';
@@ -18,15 +17,12 @@ const browserSync = require('browser-sync').create();
 
 // Add src and dest paths to files you will handle in tasks here. For js files, also add bundles to create
 const paths = {
-  responsive: {
-    src: 'src/img/**/*.jpg',
-    dest: 'dist/img/'
-  },
+
   js: {
     src: 'src/**/*.js',
     dest: 'dist/',
     // don't add the src folder to path. Use a path relative to the src folder. Use array even if only one bundle.
-    bundles: ['js/main.js', 'js/restaurant_info.js', 'sw.js']
+    bundles: ['js/main.js', 'js/restaurant_info.js', 'sw.js' ]
   }
 };
 
@@ -48,31 +44,6 @@ gulp.task('clean', function(done) {
   return del(['dist/'], done);
 });
 
-// task for creating responsive images
-gulp.task('responsive:images', function() {
-  log(c.cyan('Creating Responsive images...'));
-  return gulp.src(paths.responsive.src)
-    .pipe(responsive({
-      // Here is where you can change sizes and suffixes to fit your needs. Right now 
-      // we are resizing all jpg images to three different sizes: 300, 600 and 800 px wide.
-
-      '**/*.jpg': [{
-        width: 800,
-        quality: 70,
-        rename: { suffix: '-large'}
-      }, {
-        width: 600,
-        quality: 50,
-        rename: { suffix: '-medium'}
-      }, {
-        width: 300,
-        quality: 40,
-        rename: { suffix: '-small'}
-      }]
-    },))
-    .pipe(gulp.dest(paths.responsive.dest));
-});
-
 // task for copying all files not handled by other tasks. copy.src is used on this task
 gulp.task('copy', function() {
   log(c.cyan('Copying all files from following sources: '), c.yellow(copy.src));
@@ -85,7 +56,7 @@ gulp.task('copy', function() {
 gulp.task('build', function(done) {
   return runSequence(
     'clean',
-    ['responsive:images', 'js:bundle'],
+    ['js:bundle'],
     'copy', // copy is done last, so is easy to see what's been copied.
     done
   )
@@ -100,7 +71,7 @@ gulp.task('sync', ['build'], function() {
     }
   });
 
-  gulp.watch(paths.responsive.src, ['responsive:images']).on('change', browserSync.reload);
+  // gulp.watch(paths.responsive.src, ['responsive:images']).on('change', browserSync.reload);
   gulp.watch(copy.src, ['copy']).on('change', browserSync.reload);
 
   // each bundle on 'update' will call browserSync.stream() at the end of the pipe

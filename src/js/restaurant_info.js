@@ -1,28 +1,28 @@
 'use-strict';
 
-import DBHelper from './dbHelper';
-import './js/register';
-import favoriteButton from './favoriteButton';
-import reviewForm from './reviewForm';
+import DBHelper from './dbhelper';
+// import './register';
+import './browser';
+
 
 let restaurant = '';
-var map;
+var newMap;
 
 /**
  * Initialize map if you look at the script imported google runs init
  */
-const initMap = () => {
+window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      map = new google.maps.Map(document.getElementById('detail-map'), {
+      newMap = new google.maps.Map(document.getElementById('detail-map'), {
         zoom: 16,
         center: restaurant.latlng,
         scrollwheel: false
       });
       fillBreadcrumb();
-      DBHelper.mapMarkerForRestaurant(self.restaurant, map);
+      DBHelper.mapMarkerForRestaurant(self.restaurant, newMap);
     }
   // Google map makes a bunch of links that steal focus of a screen reader
   // Going to add an event that sets attribute to all of these items
@@ -67,9 +67,6 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById('restaurant-name');
   name.innerHTML = restaurant.name;
 
-  const favButtonContainer = document.getElementById('fav-button-container');
-  favButtonContainer.append( favoriteButton(restaurant) );
-
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
 
@@ -88,8 +85,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  DBHelper.fetchReviewsByRestaurantId(restaurant.id)
-  .then(fillReviewsHTML());
+  fillReviewsHTML();
 }
 
 /**
@@ -126,20 +122,16 @@ const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';
     container.appendChild(noReviews);
-  } else {
-    const ul = document.getElementById('reviews-list');
-    reviews.forEach(review => {
-      ul.appendChild(createReviewHTML(review));
-    });
-    ul.setAttribute('tabindex', '0');
-    ul.setAttribute('aria-label', `List of restaurant reviews for ${self.restaurant.name}`);
-    container.appendChild(ul);
+    return;
   }
-  const h3 = document.createElement('h3');
-  h3.innerHTML = "Leave a Review";
-  container.appendChild(h3);
-  const id = getParameterByName('id');
-  container.appendChild(reviewForm(id));
+  const ul = document.getElementById('reviews-list');
+  reviews.forEach(review => {
+    ul.appendChild(createReviewHTML(review));
+  });
+
+  ul.setAttribute('tabindex', '0');
+  ul.setAttribute('aria-label', `List of restaurant reviews for ${self.restaurant.name}`);
+  container.appendChild(ul);
 }
 
 /**
@@ -152,7 +144,7 @@ const createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = new Date(review.createdAt).toLocaleDateString();
+  date.innerHTML = review.date;
   li.appendChild(date);
 
   const rating = document.createElement('p');

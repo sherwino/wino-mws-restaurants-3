@@ -2,7 +2,6 @@ let usersBrowser;
 const { userAgent } = navigator;
 
 // The order matters here, and this may report false positives for unlisted browsers.
-// TODO: Maybe refactor this
 if (userAgent.indexOf('Firefox') > -1) {
     usersBrowser = 'Mozilla Firefox';
 } else if (userAgent.indexOf('Opera') > -1) {
