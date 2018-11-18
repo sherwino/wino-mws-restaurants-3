@@ -29,7 +29,7 @@ body {
 #breadcrumb {
   padding: 10px 40px 16px;
   list-style: none;
-  background-color: #eee;
+  background-color: #fff;
   font-size: 17px;
   margin: 0;
   width: 50%;
@@ -88,7 +88,7 @@ body {
 }
 
 #restaurant-name {
-  color: #f18200;
+  color: #000;
   font-family: Arial, sans-serif;
   font-size: 20pt;
   font-weight: 200;
@@ -104,7 +104,7 @@ body {
 
 #restaurant-cuisine {
   background-color: #333;
-  color: #ddd;
+  color: #eee;
   font-size: 12pt;
   font-weight: 300;
   letter-spacing: 10px;
@@ -139,7 +139,7 @@ body {
 }
 
 #reviews-container h3 {
-  color: #f58500;
+  color: #9f5801;
   font-size: 24pt;
   font-weight: 300;
   letter-spacing: -1px;

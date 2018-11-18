@@ -6,23 +6,23 @@ import dbPromise from "./dbpromise";
 export default class DBHelper {
   /**
    * Database URL.
-   * Change this to restaurants.json file location on your server.
+   * Reserved for when the API is hosted elsewhere.
    */
-  static get DATABASE_URL() {
-    const data = "/public/data/restaurants.json";
-    const github = `https://sherwino.github.io/wino-mws-restaurants/${data}`;
-    const port = 8000;
+  // static get DATABASE_URL() {
+  //   const data = "/public/data/restaurants.json";
+  //   const github = `https://sherwino.github.io/wino-mws-restaurants/${data}`;
+  //   const port = 8000;
 
-    const isLocalHost = () => {
-      if (window.location.hostname.includes("localhost")) {
-        return `http://localhost:${port}/${data}`;
-      }
-    };
+  //   const isLocalHost = () => {
+  //     if (window.location.hostname.includes("localhost")) {
+  //       return `http://localhost:${port}/${data}`;
+  //     }
+  //   };
 
-    const url = isLocalHost() || github;
+  //   const url = isLocalHost() || github;
 
-    return url;
-  }
+  //   return url;
+  // }
 
   /**
    * API URL
@@ -40,10 +40,7 @@ export default class DBHelper {
     xhr.open("GET", `${DBHelper.API_URL}/restaurants`);
     xhr.onload = () => {
       if (xhr.status === 200) {
-        // Got a success response from server!
-        console.log("got a response from the server");
         const restaurants = JSON.parse(xhr.responseText);
-        console.log(restaurants);
         dbPromise.putRestaurants(restaurants);
         callback(null, restaurants);
       } else {
@@ -53,11 +50,9 @@ export default class DBHelper {
         );
         // if xhr request isn't code 200, try idb
         dbPromise.getRestaurants().then(idbRestaurants => {
-          // if we get back more than 1 restaurant from idb, return idbRestaurants
           if (idbRestaurants.length) {
             callback(null, idbRestaurants);
           } else {
-            // if we got back 0 restaurants return an error
             callback("No restaurants found in idb", null);
           }
         });
@@ -84,14 +79,12 @@ export default class DBHelper {
   static fetchRestaurantById(id, callback) {
     fetch(`${DBHelper.API_URL}/restaurants/${id}`)
       .then(response => {
-        console.log("tried to fetch a restaurant by id");
         if (!response.ok)
           return Promise.reject("Restaurant couldn't be fetched from network");
         return response.json();
       })
       .then(fetchedRestaurant => {
         // if restaurant could be fetched from network:
-        console.log("fetched", fetchedRestaurant);
         dbPromise.putRestaurants(fetchedRestaurant);
         return callback(null, fetchedRestaurant);
       })
@@ -107,7 +100,7 @@ export default class DBHelper {
   }
 
   /**
-   * Fetch a restaurant reviews by its ID.
+   * Fetch restaurant reviews by restaurant id.
    */
   static fetchsReviewsByRestaurantId(id) {
     return fetch(`${DBHelper.API_URL}/reviews/?restaurant_id=${id}`)
@@ -117,14 +110,12 @@ export default class DBHelper {
         return response.json();
       })
       .then(fetchedReviews => {
-        // if review could be fetched from network:
         dbPromise.putReviews(fetchedReviews);
         return fetchedReviews;
       })
       .catch(networkError => {
-        // if review couldn't be fetched from network:
         console.log(`${networkError}`);
-        return dbPromise.getReviewsForRestaurant(restaurant_id)
+        return dbPromise.getReviewsForRestaurant(id)
         .then(idbReviews => {
           if(!idbReviews.length) return null;
           return idbReviewsl

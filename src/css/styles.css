@@ -61,8 +61,8 @@ section {
   min-height: 100%;
 }
 #footer {
-  background-color: #444;
-  color: #aaa;
+  background-color: #032c47;
+  color: #fff;
   font-size: 8pt;
   letter-spacing: 1px;
   padding: 25px;
@@ -103,7 +103,7 @@ nav h1 a {
 .filter-options {
   width: 100%;
   height: 50px;
-  background-color: #3397db;
+  background-color: #032c47;
   align-items: center;
   transition: 1s;
 }
@@ -166,7 +166,7 @@ nav h1 a {
   min-width: 100%;
 }
 #restaurants-list li h2 {
-  color: #f18200;
+  color: #000;
   font-family: Arial, sans-serif;
   font-size: 14pt;
   font-weight: 200;
@@ -180,7 +180,7 @@ nav h1 a {
   font-size: 11pt;
 }
 .view-details-btn {
-  background: #ffa500;
+  background: #181000;
   border: 0;
   color: #fff;
   display: inline-block;
@@ -193,20 +193,6 @@ nav h1 a {
 }
 
 .view-details-btn:hover {
-  background: #f29d00;
-}
-
-.fav-restaurant {
-  width: 2px;
-  height: 2px;
-  background: #ffa500;
-}
-
-.fav-restaurant[aria-pressed=true] {
-  background: #f29d00;
-}
-
-.fav-restaurant:hover {
   background: #f29d00;
 }
 

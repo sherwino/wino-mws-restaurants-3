@@ -83,7 +83,7 @@ const fillCuisinesHTML = (cuisines = self.cuisines) => {
 /**
  * Update page and map for current restaurants.
  */
-const updateRestaurants = () => {
+window.updateRestaurants = () => {
   const cSelect = document.getElementById('cuisines-select');
   const nSelect = document.getElementById('neighborhoods-select');
 
