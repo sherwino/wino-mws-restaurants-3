@@ -124,18 +124,27 @@ const fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   title.innerHTML = 'Reviews';
   container.appendChild(title);
 
+  const list = document.createElement('div');
+  list.id = 'list-container';
+  container.appendChild(list);
+
+  const ul = document.createElement('ul');
+  ul.id = 'reviews-list';
+  ul.setAttribute('tabindex', '0');
+  ul.setAttribute('aria-label', `List of restaurant reviews for ${self.restaurant.name}`);
+  list.appendChild(ul);
+
   if (!reviews) {
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';
+    noReviews.id = 'no-reviews';
     container.appendChild(noReviews);
+
   } else {
-    const ul = document.getElementById('reviews-list');
     reviews.forEach(review => {
       ul.appendChild(createReviewHTML(review));
+
     });
-    ul.setAttribute('tabindex', '0');
-    ul.setAttribute('aria-label', `List of restaurant reviews for ${self.restaurant.name}`);
-    container.appendChild(ul);
   }
 
   const head = document.createElement('h3');

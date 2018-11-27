@@ -1,6 +1,6 @@
 const staticCacheName = 'reviews-v1';
 const cacheItems = [
-    '/',
+    './',
     './css/mediaqueries.css',
     './css/restaurants.css',
     './css/styles.css',

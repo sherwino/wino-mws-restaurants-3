@@ -2,7 +2,7 @@ const { serviceWorker } = navigator;
 
 const registerServiceWorker = () => {
     if ('serviceWorker' in navigator) {
-        serviceWorker.register('/sw.js', 
+        serviceWorker.register('./sw.js', 
             { scope: './' }
         ).then((registration) => {
             console.info('Service worker registered', registration.scope);

@@ -7,20 +7,28 @@ import dbPromise from "./dbpromise";
  */
 function createReviewHTML(review) {
   const li = document.createElement("li");
-  const name = document.createElement("p");
-  name.innerHTML = review.name;
-  li.appendChild(name);
+  const reviewer = document.createElement("strong");
+  reviewer.innerHTML = review.name;
+  reviewer.className = 'reviewer';
+  reviewer.setAttribute('alt', 'Reviewer name');
+  li.appendChild(reviewer);
 
   const date = document.createElement("p");
   date.innerHTML = new Date(review.createdAt).toLocaleDateString();
+  date.className = 'date';
+  date.setAttribute('alt', 'Date reviewed');
   li.appendChild(date);
 
   const rating = document.createElement("p");
   rating.innerHTML = `Rating: ${review.rating}`;
+  rating.className = 'rating';
+  rating.setAttribute('alt', 'Rating given by reviewer');
   li.appendChild(rating);
 
   const comments = document.createElement("p");
   comments.innerHTML = review.comments;
+  comments.className = 'comments';
+  comments.setAttribute('alt', 'Comments written by reviewer');
   li.appendChild(comments);
 
   return li;
@@ -34,6 +42,16 @@ function clearForm() {
   document.getElementById("name").value = "";
   document.getElementById("rating").selectedIndex = 0;
   document.getElementById("comments").value = "";
+}
+
+/**
+ * Remove no review element
+ */
+function removeNoReviews() {
+  const noReviews = document.getElementById("no-reviews");
+  
+  if(noReviews) noReviews.remove();
+
 }
 
 /**
@@ -87,8 +105,6 @@ function handleSubmit(e) {
   const review = validateAndGetData();
   if (!review) return;
 
-  console.log(review);
-
   const url = `${DBHelper.API_URL}/reviews/`;
   const POST = {
     method: "POST",
@@ -109,6 +125,10 @@ function handleSubmit(e) {
       const reviewList = document.getElementById("reviews-list");
       const review = createReviewHTML(newNetworkReview);
       reviewList.appendChild(review);
+
+      //remove noReviews element
+      removeNoReviews();
+
       // clear form
       clearForm();
     });

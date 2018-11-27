@@ -42,7 +42,8 @@
     "lint": "eslint --fix .",
     "client": "grunt && gulp sync",
     "server": "cd server && node server",
-    "static": "cd src && python -m SimpleHTTPServer 8000",
+    "static": "cd dist && python -m SimpleHTTPServer 8000",
+    "static:python3": "cd dist && python -m http.server 8000",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -68,5 +69,8 @@
   "bugs": {
     "url": "https://github.com/sherwino/wino-mws-restaurants-3/issues"
   },
-  "homepage": "https://github.com/sherwino/wino-mws-restaurants-3#readme"
+  "homepage": "https://github.com/sherwino/wino-mws-restaurants-3#readme",
+  "dependencies": {
+    "http2": "^3.3.7"
+  }
 }

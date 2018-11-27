@@ -196,6 +196,18 @@ nav h1 a {
   background: #f29d00;
 }
 
+.fav-restaurant:hover {
+  color: #f29d00;
+}
+
+.fav-restaurant:hover {
+  color: #f29d00;
+}
+
+.fav-restaurant[aria-checked="true"] {
+  color: #f29d00;
+}
+
 /* CSS Grid Settings */
 /* Other than in Internet Explorer, CSS Grid Layout is unprefixed in Safari, Chrome, Opera,  Firefox and Edge. */
 /* Using template columns in this page so that I doin't have to mess around too much with css above */

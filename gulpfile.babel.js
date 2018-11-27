@@ -66,9 +66,12 @@ gulp.task('build', function(done) {
 gulp.task('sync', ['build'], function() {
   browserSync.init({
     port: 8000,
+    injectChanges: false,
     server: {
       baseDir: './dist'
-    }
+    },
+    httpModule: 'http2',
+    https: false
   });
 
   // gulp.watch(paths.responsive.src, ['responsive:images']).on('change', browserSync.reload);

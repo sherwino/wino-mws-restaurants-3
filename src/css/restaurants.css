@@ -10,6 +10,10 @@ body {
   width: 100%;
 }
 
+.hidden {
+  display: none;
+}
+
 #maincontent {
   margin: 0;
   display: grid;
@@ -167,6 +171,25 @@ body {
   margin: 0 0 10px;
 }
 
+.reviewer {
+  color: #032c47;
+  padding: 1em 0.4em;
+  line-height: 1em;
+}
+
+.date {
+  padding: 0.2em 1em;
+}
+
+.rating {
+  color: #db0925;
+  padding: 0.2em 1.5em;
+}
+
+.comments {
+  background: #eeeeee70;
+  padding: 2em;
+}
 /* ====================== FOOTERS ====================== */
 
 .inside #footer {
