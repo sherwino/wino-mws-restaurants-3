@@ -77,7 +77,7 @@ typings/
 .vscode/
 
 # Ignore but maybe I shouldn't because we want to use github pages
-dist/
+# dist/
 
 # Ignore secrets
 src/js/secret.js

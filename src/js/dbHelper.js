@@ -5,26 +5,6 @@ import dbPromise from "./dbpromise";
  */
 export default class DBHelper {
   /**
-   * Database URL.
-   * Reserved for when the API is hosted elsewhere.
-   */
-  // static get DATABASE_URL() {
-  //   const data = "/public/data/restaurants.json";
-  //   const github = `https://sherwino.github.io/wino-mws-restaurants/${data}`;
-  //   const port = 8000;
-
-  //   const isLocalHost = () => {
-  //     if (window.location.hostname.includes("localhost")) {
-  //       return `http://localhost:${port}/${data}`;
-  //     }
-  //   };
-
-  //   const url = isLocalHost() || github;
-
-  //   return url;
-  // }
-
-  /**
    * API URL
    */
   static get API_URL() {
@@ -246,7 +226,8 @@ export default class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    const url = `/img/${restaurant.photograph || restaurant.id}-medium.jpg`;
+      const url = `./img/${restaurant.photograph || restaurant.id}-medium.jpg`;
+  
     return url;
   }
 
@@ -255,7 +236,7 @@ export default class DBHelper {
    * and fallbacks to restaurant.id if former is missing.
    */
   static imageSrcsetForRestaurant(restaurant) {
-    const imageSrc = `/img/${restaurant.photograph || restaurant.id}`;
+    const imageSrc = `./img/${restaurant.photograph || restaurant.id}`;
     return `${imageSrc}-small.jpg 300w,
             ${imageSrc}-medium.jpg 600w,
             ${imageSrc}-large.jpg 800w`;
