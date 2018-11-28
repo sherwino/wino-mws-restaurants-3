@@ -36,5 +36,10 @@ Another thing I noticed was that one machine is running Node 8.12.0, and the oth
 
 ### Hosted Version of the Site
 
-*Coming soon*
+https://sherwino.github.io/wino-mws-restaurants-3/dist/
+
+
+#### Things I have learned
+
+It is not smart to spend all of your time editing a Gulp && Grunt file that is not even being executed in the first place. The whole time I was editing the files inside the src folder, but those are not the ones running with my start scripts. No wonder I haven't been seeing any results.
 

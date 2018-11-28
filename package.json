@@ -74,6 +74,7 @@
   },
   "homepage": "https://github.com/sherwino/wino-mws-restaurants-3#readme",
   "dependencies": {
-    "http2": "^3.3.7"
+    "gulp-imagemin": "^5.0.3",
+    "imagemin-webp": "^4.1.0"
   }
 }
