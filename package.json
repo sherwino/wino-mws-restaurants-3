@@ -42,9 +42,11 @@
   "scripts": {
     "lint": "eslint --fix .",
     "client": "grunt && gulp sync",
-    "server": "cd server && node server",
+    "server": "cd server && npm run start",
+    "server:init": "cd server && npm install",
     "static": "cd dist && python -m SimpleHTTPServer 8000",
     "static:python3": "cd dist && python -m http.server 8000",
+    "start": "npm run client",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

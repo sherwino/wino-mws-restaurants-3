@@ -29,8 +29,19 @@ export default class DBHelper {
    */
   static get API_URL() {
     const port = 1337; // port where sails server will listen.
-    return `http://localhost:${port}`;
+
+    const heroku = 'https://winosails.herokuapp.com';
+    const isLocalHost = () => {
+      if (window.location.hostname.includes("localhost")) {
+        return `http://localhost:${port}`;
+      }
+    };
+
+    const url = isLocalHost() || heroku;
+
+    return url;
   }
+
 
   /**
    * Fetch all restaurants.
