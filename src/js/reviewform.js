@@ -90,8 +90,6 @@ function validateAndGetData() {
   let restaurantId = document.getElementById("review-form").dataset
     .restaurantId;
   data.restaurant_id = Number(restaurantId);
-
-  // set createdAT
   data.createdAt = new Date().toISOString();
 
   return data;
@@ -111,7 +109,6 @@ function handleSubmit(e) {
     body: JSON.stringify(review)
   };
 
-  // TODO: use Background Sync to sync data with API server
   return fetch(url, POST)
     .then(response => {
       if (!response.ok)
@@ -147,7 +144,7 @@ export default function reviewForm(restaurantId) {
   name.id = "name";
   name.setAttribute("type", "text");
   name.setAttribute("aria-label", "Name");
-  name.setAttribute("placeholder", "Enter Your Name");
+  name.setAttribute("placeholder", "Name");
   p.appendChild(name);
   form.appendChild(p);
 

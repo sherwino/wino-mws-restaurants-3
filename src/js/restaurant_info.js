@@ -91,7 +91,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
   }
   // fill reviews
   DBHelper.fetchsReviewsByRestaurantId(restaurant.id)
-  .then(fillReviewsHTML());
+  .then((reviews) => fillReviewsHTML(reviews));
 }
 
 /**
@@ -161,19 +161,26 @@ const createReviewHTML = (review) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.innerHTML = review.name;
+  name.className = 'reviewer';
+  name.setAttribute('alt', 'Reviewer name');
   li.appendChild(name);
 
   const date = document.createElement('p');
   date.innerHTML = new Date(review.createdAt).toLocaleDateString();
-  date.innerHTML = review.date;
+  date.className = 'date';
+  date.setAttribute('alt', 'Date reviewed');
   li.appendChild(date);
 
   const rating = document.createElement('p');
   rating.innerHTML = `Rating: ${review.rating}`;
+  rating.className = 'rating';
+  rating.setAttribute('alt', 'Rating given by reviewer');
   li.appendChild(rating);
 
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
+  comments.className = 'comments';
+  comments.setAttribute('alt', 'Comments written by reviewer');
   li.appendChild(comments);
 
   return li;

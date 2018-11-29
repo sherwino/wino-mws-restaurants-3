@@ -1,5 +1,7 @@
 import gulp from 'gulp';
-// import responsive from 'gulp-responsive';
+import uglify from 'gulp-uglify';
+import concat from 'gulp-concat';
+import gzip from 'gulp-gzip';
 import del from 'del';
 import newer from 'gulp-newer';
 import runSequence from 'run-sequence';
@@ -54,7 +56,7 @@ gulp.task('responsive:images', function() {
   log(c.cyan('Creating Responsive images...'));
   return gulp.src(paths.responsive.src)
   .pipe(imagemin([imageminMozjpeg({
-    quality: 40
+    quality: 30
 
 })]))
 
@@ -69,11 +71,20 @@ gulp.task('copy', function() {
     .pipe(gulp.dest(copy.dest));
 });
 
+gulp.task('min', function() {
+	gulp.src('dist/js/*.js')
+	// .pipe(concat())
+	.pipe(uglify())
+	.pipe(gzip())
+	.pipe(gulp.dest('dist/js'));
+});
+
+
 // build task
 gulp.task('build', function(done) {
   return runSequence(
     'clean',
-    ['responsive:images','js:bundle'],
+    ['min', 'responsive:images','js:bundle'],
     'copy', // copy is done last, so is easy to see what's been copied.
     done
   )

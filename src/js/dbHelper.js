@@ -109,7 +109,7 @@ export default class DBHelper {
         return dbPromise.getReviewsForRestaurant(id)
         .then(idbReviews => {
           if(!idbReviews.length) return null;
-          return idbReviewsl
+          return idbReviews;
         });
       });
   }

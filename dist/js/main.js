@@ -458,7 +458,7 @@ function () {
         console.log("".concat(networkError));
         return _dbpromise.default.getReviewsForRestaurant(id).then(function (idbReviews) {
           if (!idbReviews.length) return null;
-          return idbReviewsl;
+          return idbReviews;
         });
       });
     }
@@ -675,34 +675,40 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var dbPromise = {
   // creation and updating of database happens here.
-  db: _idb.default.open('restaurant-reviews-db', 2, function (upgradeDb) {
+  db: _idb.default.open("restaurant-reviews-db", 3, function (upgradeDb) {
     switch (upgradeDb.oldVersion) {
       case 0:
-        upgradeDb.createObjectStore('restaurants', {
-          keyPath: 'id'
+        upgradeDb.createObjectStore("restaurants", {
+          keyPath: "id"
         });
 
       case 1:
-        upgradeDb.createObjectStore('reviews', {
-          keyPath: 'id'
-        }).createIndex('restaurant_id', 'restaurant_id');
+        upgradeDb.createObjectStore("reviews", {
+          keyPath: "id"
+        }).createIndex("restaurant_id", "restaurant_id");
+
+      case 2:
+        upgradeDb.createObjectStore("offline", {
+          autoIncrement: true,
+          keyPath: "id"
+        }).createIndex("restaurant_id", "restaurant_id");
     }
   }),
 
   /**
-   * Save a restaurant or array of restaurants into idb, using promises.
+   * Save restaurant
    */
   putRestaurants: function putRestaurants(restaurants) {
     var forceUpdate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     if (!restaurants.push) restaurants = [restaurants];
     return this.db.then(function (db) {
-      var store = db.transaction('restaurants', 'readwrite').objectStore('restaurants');
-      Promise.all(restaurants.map(function (networkRestaurant) {
-        return store.get(networkRestaurant.id).then(function (idbRestaurant) {
-          if (forceUpdate) return store.put(networkRestaurant);
+      var store = db.transaction("restaurants", "readwrite").objectStore("restaurants");
+      Promise.all(restaurants.map(function (apiRestaurant) {
+        return store.get(apiRestaurant.id).then(function (idbRestaurant) {
+          if (forceUpdate) return store.put(apiRestaurant);
 
-          if (!idbRestaurant || new Date(networkRestaurant.updatedAt) > new Date(idbRestaurant.updatedAt)) {
-            return store.put(networkRestaurant);
+          if (!idbRestaurant || new Date(apiRestaurant.updatedAt) > new Date(idbRestaurant.updatedAt)) {
+            return store.put(apiRestaurant);
           }
         });
       })).then(function () {
@@ -712,35 +718,38 @@ var dbPromise = {
   },
 
   /**
-   * Get a restaurant, by its id, or all stored restaurants in idb using promises.
-   * If no argument is passed, all restaurants will returned.
+   * Get restaurant
    */
   getRestaurants: function getRestaurants() {
     var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : undefined;
     return this.db.then(function (db) {
-      var store = db.transaction('restaurants').objectStore('restaurants');
+      var store = db.transaction("restaurants").objectStore("restaurants");
       if (id) return store.get(Number(id));
       return store.getAll();
     });
   },
+
+  /**
+   * Save reviews
+   */
   putReviews: function putReviews(reviews) {
     if (!reviews.push) reviews = [reviews];
     return this.db.then(function (db) {
-      var store = db.transaction('reviews', 'readwrite').objectStore('reviews');
-      Promise.all(reviews.map(function (networkReview) {
-        return store.get(networkReview.id).then(function (idbReview) {
-          if (!idbReview || new Date(networkReview.updatedAt) > new Date(idbReview.updatedAt)) {
-            return store.put(networkReview);
+      var store = db.transaction("reviews", "readwrite").objectStore("reviews");
+      Promise.all(reviews.map(function (apiReview) {
+        return store.get(apiReview.id).then(function (idbReview) {
+          if (!idbReview || new Date(apiReview.updatedAt) > new Date(idbReview.updatedAt)) {
+            return store.put(apiReview);
           }
         });
       })).then(function () {
-        return store.completel;
+        return store.complete;
       });
     });
   },
   getReviewsForRestaurant: function getReviewsForRestaurant(id) {
     return this.db.then(function (db) {
-      var storeIndex = db.transaction('reviews').objectStore('reviews').index('restaurant_id');
+      var storeIndex = db.transaction("reviews").objectStore("reviews").index("restaurant_id");
       return storeIndex.getAll(Number(id));
     });
   }
@@ -1088,43 +1097,49 @@ var _navigator = navigator,
     serviceWorker = _navigator.serviceWorker;
 
 var registerServiceWorker = function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    serviceWorker.register('./sw.js', {
-      scope: './'
+  if ("serviceWorker" in navigator) {
+    serviceWorker.register("./sw.js", {
+      scope: "./"
     }).then(function (registration) {
-      console.info('Service worker registered', registration.scope);
+      console.info("Service worker registered", registration.scope);
       var sw = {};
 
       if (registration.installing) {
         sw.status = registration.installing;
-        console.info('Service worker installing');
+        console.info("Service worker installing");
       }
 
       if (registration.waiting) {
         sw.status = registration.waiting;
-        console.warn('Service worker waiting');
+        console.warn("Service worker waiting");
       }
 
       if (registration.active) {
         sw.status = registration.active;
-        console.info('Service worker active');
+        console.info("Service worker active");
+      }
+
+      if ('sync' in registration) {
+        console.info("Sync active");
       }
 
       if (sw.status) {
-        console.log('Service worker state:', sw.status.state);
-        sw.status.addEventListener('statechange', function (e) {
-          console.log('Service worker state:', e.target.state);
+        console.log("Service worker state:", sw.status.state);
+        sw.status.addEventListener("statechange", function (e) {
+          console.log("Service worker state:", e.target.state);
         });
       }
-    }).catch(function () {
-      console.error('Service worker installation failed');
-    });
-  }
 
-  ;
+      return null;
+    }).catch(function (err) {
+      console.error("Service worker installation failed", err); // loadPage();
+    });
+  } // If you end up here serviceworker is not supported
+  //loadPage();
+
 };
 
-document.addEventListener('DOMContentLoaded', function (event) {
+document.addEventListener("DOMContentLoaded", function (event) {
   registerServiceWorker();
 });
 

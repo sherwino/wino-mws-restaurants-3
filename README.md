@@ -28,8 +28,6 @@ For Python 3 - ```npm run static:python3```
 
 For Python 2 - ```npm run static```
 
-Another thing I noticed was that one machine is running Node 8.12.0, and the other is running Node 10.8.0, while it is nice to have the latest bug fixes and features like npx, a lot of these old libraries don't play nice with Node 10. So this could be part of the issues I am having using the http2 library. More on that later!
-
 ### Screenshots
 
 ![Gif of the version two of the site](https://i.gyazo.com/9b46236aeb67a58d153fad66c1bea010.gif)
@@ -42,4 +40,7 @@ https://sherwino.github.io/wino-mws-restaurants-3/dist/
 #### Things I have learned
 
 It is not smart to spend all of your time editing a Gulp && Grunt file that is not even being executed in the first place. The whole time I was editing the files inside the src folder, but those are not the ones running with my start scripts. No wonder I haven't been seeing any results.
+
+GoogleMaps has lowered my lighthouse 3.0 score, and I don't know how to fix it yet. 
+[View my last score here](https://sherwino.github.io/wino-mws-restaurants-3/dist/lighthouse.html) and if you have any pointers on how I could improce this let me know.
 
