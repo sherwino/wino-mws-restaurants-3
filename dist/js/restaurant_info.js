@@ -979,10 +979,12 @@ var toggleClassDet = function toggleClassDet(e) {
   if (mapEl.className === "hidden") {
     mapEl.className = "";
     staticMapEl.className = "hidden";
+    window.reload();
   } else {
     mapEl.className = "hidden"; // staticMapEl.src=getStaticMapUrl();
 
     staticMapEl.className = "";
+    window.reload();
   }
 };
 
