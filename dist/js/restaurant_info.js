@@ -970,39 +970,44 @@ var _reviewform = _interopRequireDefault(require("./reviewform"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var restaurant = '';
-var newMap;
+var newMap; // const toggleClassDet = e => {
+//   const staticMapEl = document.getElementById("map-img-detail");
+//   const mapEl = document.getElementById("detail-map");
+//   if (mapEl.className === "hidden") {
+//     mapEl.className = "";
+//     staticMapEl.className = "hidden";
+//     window.reload();
+//   } else {
+//     mapEl.className = "hidden";
+//     // staticMapEl.src=getStaticMapUrl();
+//     staticMapEl.className = "";
+//     window.reload();
+//   }
+// }
+// const getStaticMapUrl = (mark) => {
+//   const baseUrl = 'https://maps.googleapis.com/maps/api/staticmap?';
+//   const key = 'AIzaSyA4ISihvtXNswa92tcB_pu30DdB7lHn3c4';
+//   const format = 'jpg&';
+//   const staticMarkers = ` markers=color:red|40.713829,-73.989667&
+//                           markers=color:red|40.747143,-73.985414&
+//                           markers=color:red|40.683555,-73.966393&
+//                           markers=color:red|40.722216,-73.987501&
+//                           markers=color:red|40.705089,-73.933585&
+//                           markers=color:red|40.674925,-74.016162&
+//                           markers=color:red|40.727397,-73.983645&
+//                           markers=color:red|40.726584,-74.002082&
+//                           markers=color:red|40.743797,-73.950652&
+//                           markers=color:red|40.743394,-73.954235&`;
+//   const width = 900 || window.innerWidth;
+//   const height = 400;
+//   const centerZoomSize = `center=40.722216,-73.987501&zoom=11&size=${width}x${height}&f&`
+//   const url = baseUrl + centerZoomSize + format + staticMarkers + key;
+//   return url;
+// };
 
-var toggleClassDet = function toggleClassDet(e) {
-  var staticMapEl = document.getElementById("map-img-detail");
-  var mapEl = document.getElementById("detail-map");
-
-  if (mapEl.className === "hidden") {
-    mapEl.className = "";
-    staticMapEl.className = "hidden";
-    window.reload();
-  } else {
-    mapEl.className = "hidden"; // staticMapEl.src=getStaticMapUrl();
-
-    staticMapEl.className = "";
-    window.reload();
-  }
-};
-
-var getStaticMapUrl = function getStaticMapUrl(mark) {
-  var baseUrl = 'https://maps.googleapis.com/maps/api/staticmap?';
-  var key = 'AIzaSyA4ISihvtXNswa92tcB_pu30DdB7lHn3c4';
-  var format = 'jpg&';
-  var staticMarkers = " markers=color:red|40.713829,-73.989667&\n                          markers=color:red|40.747143,-73.985414&\n                          markers=color:red|40.683555,-73.966393&\n                          markers=color:red|40.722216,-73.987501&\n                          markers=color:red|40.705089,-73.933585&\n                          markers=color:red|40.674925,-74.016162&\n                          markers=color:red|40.727397,-73.983645&\n                          markers=color:red|40.726584,-74.002082&\n                          markers=color:red|40.743797,-73.950652&\n                          markers=color:red|40.743394,-73.954235&";
-  var width = 900 || window.innerWidth;
-  var height = 400;
-  var centerZoomSize = "center=40.722216,-73.987501&zoom=11&size=".concat(width, "x").concat(height, "&f&");
-  var url = baseUrl + centerZoomSize + format + staticMarkers + key;
-  return url;
-};
 /**
  * Initialize map if you look at the script imported google runs init
  */
-
 
 window.initMap = function () {
   fetchRestaurantFromURL(function (error, restaurant) {

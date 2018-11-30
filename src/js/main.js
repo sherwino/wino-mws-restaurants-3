@@ -5,6 +5,7 @@ import "./register";
 import "./browser";
 import "./favoritebutton";
 import favoriteButton from "./favoriteButton";
+import "./lozad";
 
 let restaurants, neighborhoods, cuisines;
 var newMap;
