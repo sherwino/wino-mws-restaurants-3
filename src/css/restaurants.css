@@ -83,6 +83,10 @@ body {
   width: 100%;
 }
 
+#map-image-detail {
+  height: 100%;
+}
+
 /* ====================== RESTAURANT DETAILS ====================== */
 
 #restaurant-container {

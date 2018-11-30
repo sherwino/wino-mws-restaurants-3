@@ -69,6 +69,9 @@ section {
   text-align: center;
   text-transform: uppercase;
 }
+.hidden {
+  display: none;
+}
 /* ====================== Navigation ====================== */
 nav {
   width: 100%;
@@ -93,6 +96,10 @@ nav h1 a {
   height: 400px;
   width: 100%;
   background-color: #ccc;
+}
+
+#map-img {
+  width: 100%;
 }
 /* ====================== Restaurant Filtering ====================== */
 .filter-label {

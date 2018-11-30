@@ -9,6 +9,46 @@ import reviewForm from './reviewform';
 let restaurant = '';
 var newMap;
 
+const toggleClassDet = e => {
+  const staticMapEl = document.getElementById("map-img-detail");
+  const mapEl = document.getElementById("detail-map");
+
+  if (mapEl.className === "hidden") {
+    mapEl.className = "";
+    staticMapEl.className = "hidden";
+    window.reload();
+  } else {
+    mapEl.className = "hidden";
+    // staticMapEl.src=getStaticMapUrl();
+    staticMapEl.className = "";
+    window.reload();
+  }
+}
+
+const getStaticMapUrl = (mark) => {
+
+  const baseUrl = 'https://maps.googleapis.com/maps/api/staticmap?';
+  const key = 'AIzaSyA4ISihvtXNswa92tcB_pu30DdB7lHn3c4';
+  const format = 'jpg&';
+  const staticMarkers = ` markers=color:red|40.713829,-73.989667&
+                          markers=color:red|40.747143,-73.985414&
+                          markers=color:red|40.683555,-73.966393&
+                          markers=color:red|40.722216,-73.987501&
+                          markers=color:red|40.705089,-73.933585&
+                          markers=color:red|40.674925,-74.016162&
+                          markers=color:red|40.727397,-73.983645&
+                          markers=color:red|40.726584,-74.002082&
+                          markers=color:red|40.743797,-73.950652&
+                          markers=color:red|40.743394,-73.954235&`;
+  const width = 900 || window.innerWidth;
+  const height = 400;
+  const centerZoomSize = `center=40.722216,-73.987501&zoom=11&size=${width}x${height}&f&`
+  
+  const url = baseUrl + centerZoomSize + format + staticMarkers + key;
+
+  return url;
+};
+
 /**
  * Initialize map if you look at the script imported google runs init
  */
@@ -28,6 +68,11 @@ window.initMap = () => {
   // Google map makes a bunch of links that steal focus of a screen reader
   // Going to add an event that sets attribute to all of these items
   const mapEl = document.getElementById('detail-map');
+  const staticMapEl = document.getElementById('map-img-detail');
+  // staticMapEl.src=getStaticMapUrl();
+
+  const container = document.getElementById('detail-map-container');
+
   mapEl.addEventListener("keydown", () => {
   const mapLinks = mapEl.querySelectorAll('a');
   mapLinks.forEach(link => link.setAttribute('tabindex', '-1'));
@@ -77,7 +122,7 @@ const fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img';
-  image.classList.add = 'lazyload';
+  image.classList.add = 'lozad';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
   image.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
   image.sizes = DBHelper.imageSizesForRestaurant(restaurant);

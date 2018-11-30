@@ -971,9 +971,36 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var restaurant = '';
 var newMap;
+
+var toggleClassDet = function toggleClassDet(e) {
+  var staticMapEl = document.getElementById("map-img-detail");
+  var mapEl = document.getElementById("detail-map");
+
+  if (mapEl.className === "hidden") {
+    mapEl.className = "";
+    staticMapEl.className = "hidden";
+  } else {
+    mapEl.className = "hidden"; // staticMapEl.src=getStaticMapUrl();
+
+    staticMapEl.className = "";
+  }
+};
+
+var getStaticMapUrl = function getStaticMapUrl(mark) {
+  var baseUrl = 'https://maps.googleapis.com/maps/api/staticmap?';
+  var key = 'AIzaSyA4ISihvtXNswa92tcB_pu30DdB7lHn3c4';
+  var format = 'jpg&';
+  var staticMarkers = " markers=color:red|40.713829,-73.989667&\n                          markers=color:red|40.747143,-73.985414&\n                          markers=color:red|40.683555,-73.966393&\n                          markers=color:red|40.722216,-73.987501&\n                          markers=color:red|40.705089,-73.933585&\n                          markers=color:red|40.674925,-74.016162&\n                          markers=color:red|40.727397,-73.983645&\n                          markers=color:red|40.726584,-74.002082&\n                          markers=color:red|40.743797,-73.950652&\n                          markers=color:red|40.743394,-73.954235&";
+  var width = 900 || window.innerWidth;
+  var height = 400;
+  var centerZoomSize = "center=40.722216,-73.987501&zoom=11&size=".concat(width, "x").concat(height, "&f&");
+  var url = baseUrl + centerZoomSize + format + staticMarkers + key;
+  return url;
+};
 /**
  * Initialize map if you look at the script imported google runs init
  */
+
 
 window.initMap = function () {
   fetchRestaurantFromURL(function (error, restaurant) {
@@ -994,6 +1021,9 @@ window.initMap = function () {
 
 
     var mapEl = document.getElementById('detail-map');
+    var staticMapEl = document.getElementById('map-img-detail'); // staticMapEl.src=getStaticMapUrl();
+
+    var container = document.getElementById('detail-map-container');
     mapEl.addEventListener("keydown", function () {
       var mapLinks = mapEl.querySelectorAll('a');
       mapLinks.forEach(function (link) {
@@ -1050,7 +1080,7 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   address.innerHTML = restaurant.address;
   var image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img';
-  image.classList.add = 'lazyload';
+  image.classList.add = 'lozad';
   image.src = _dbhelper.default.imageUrlForRestaurant(restaurant);
   image.srcset = _dbhelper.default.imageSrcsetForRestaurant(restaurant);
   image.sizes = _dbhelper.default.imageSizesForRestaurant(restaurant);

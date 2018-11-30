@@ -1024,7 +1024,7 @@ function favoriteButton(restaurant) {
 
 },{"./dbhelper":3,"./dbpromise":4}],7:[function(require,module,exports){
 "use strict";
-'use-strict';
+"use-strict";
 
 var _dbhelper = _interopRequireDefault(require("./dbhelper"));
 
@@ -1045,9 +1045,12 @@ var markers = [];
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 
-document.addEventListener('DOMContentLoaded', function (event) {
+document.addEventListener("DOMContentLoaded", function (event) {
   fetchNeighborhoods();
   fetchCuisines();
+  var observer = lozad(); // lazy loads elements with default selector as '.lozad'
+
+  observer.observe();
 });
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -1071,13 +1074,13 @@ var fetchNeighborhoods = function fetchNeighborhoods() {
 
 var fillNeighborhoodsHTML = function fillNeighborhoodsHTML() {
   var neighborhoods = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.neighborhoods;
-  var select = document.getElementById('neighborhoods-select');
+  var select = document.getElementById("neighborhoods-select");
   neighborhoods.forEach(function (neighborhood) {
-    var option = document.createElement('option');
+    var option = document.createElement("option");
     option.innerHTML = neighborhood;
     option.value = neighborhood; // Aria role needs to be dynamically added too
 
-    option.setAttribute('role', 'option');
+    option.setAttribute("role", "option");
     select.append(option);
   });
 };
@@ -1104,13 +1107,13 @@ var fetchCuisines = function fetchCuisines() {
 
 var fillCuisinesHTML = function fillCuisinesHTML() {
   var cuisines = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.cuisines;
-  var select = document.getElementById('cuisines-select');
+  var select = document.getElementById("cuisines-select");
   cuisines.forEach(function (cuisine) {
-    var option = document.createElement('option');
+    var option = document.createElement("option");
     option.innerHTML = cuisine;
     option.value = cuisine; // Aria role needs to be dynamically added too
 
-    option.setAttribute('role', 'option');
+    option.setAttribute("role", "option");
     select.append(option);
   });
 };
@@ -1120,8 +1123,8 @@ var fillCuisinesHTML = function fillCuisinesHTML() {
 
 
 window.updateRestaurants = function () {
-  var cSelect = document.getElementById('cuisines-select');
-  var nSelect = document.getElementById('neighborhoods-select');
+  var cSelect = document.getElementById("cuisines-select");
+  var nSelect = document.getElementById("neighborhoods-select");
   var cIndex = cSelect.selectedIndex;
   var nIndex = nSelect.selectedIndex;
   var cuisine = cSelect[cIndex].value;
@@ -1138,12 +1141,38 @@ window.updateRestaurants = function () {
   });
 };
 
+var toggleClass = function toggleClass(e) {
+  var staticMapEl = document.getElementById("map-img");
+  var mapEl = document.getElementById("map");
+
+  if (mapEl.className === "hidden") {
+    mapEl.className = "";
+    staticMapEl.className = "hidden";
+  } else {
+    mapEl.className = "hidden"; // staticMapEl.src=getStaticMapUrl();
+
+    staticMapEl.className = "";
+  }
+};
+
+var getStaticMapUrl = function getStaticMapUrl(mark) {
+  var baseUrl = "https://maps.googleapis.com/maps/api/staticmap?";
+  var key = "AIzaSyA4ISihvtXNswa92tcB_pu30DdB7lHn3c4";
+  var format = "jpg&";
+  var staticMarkers = " markers=color:red|40.713829,-73.989667&\n                          markers=color:red|40.747143,-73.985414&\n                          markers=color:red|40.683555,-73.966393&\n                          markers=color:red|40.722216,-73.987501&\n                          markers=color:red|40.705089,-73.933585&\n                          markers=color:red|40.674925,-74.016162&\n                          markers=color:red|40.727397,-73.983645&\n                          markers=color:red|40.726584,-74.002082&\n                          markers=color:red|40.743797,-73.950652&\n                          markers=color:red|40.743394,-73.954235&";
+  var width = 900;
+  var height = 400;
+  var centerZoomSize = "center=40.722216,-73.987501&zoom=11&size=".concat(width, "x").concat(height, "&f&");
+  var url = baseUrl + centerZoomSize + format + staticMarkers + key;
+  return url;
+};
+
 window.initMap = function () {
   var loc = {
     lat: 40.722216,
     lng: -73.987501
   };
-  newMap = new google.maps.Map(document.getElementById('map'), {
+  newMap = new google.maps.Map(document.getElementById("map"), {
     zoom: 12,
     center: loc,
     scrollwheel: false
@@ -1151,11 +1180,11 @@ window.initMap = function () {
   updateRestaurants(); // Google map makes a bunch of links that steal focus of a screen reader
   // Going to add an event that sets attribute to all of these items
 
-  var mapEl = document.getElementById('map');
+  var mapEl = document.getElementById("map");
   mapEl.addEventListener("keydown", function () {
-    var mapLinks = mapEl.querySelectorAll('a');
+    var mapLinks = mapEl.querySelectorAll("a");
     mapLinks.forEach(function (link) {
-      return link.setAttribute('tabindex', '-1');
+      return link.setAttribute("tabindex", "-1");
     });
   });
 };
@@ -1167,8 +1196,8 @@ window.initMap = function () {
 var resetRestaurants = function resetRestaurants(restaurants) {
   // Remove all restaurants
   self.restaurants = [];
-  var ul = document.getElementById('restaurants-list');
-  ul.innerHTML = ''; // Remove all map markers
+  var ul = document.getElementById("restaurants-list");
+  ul.innerHTML = ""; // Remove all map markers
 
   if (markers) {
     markers.forEach(function (marker) {
@@ -1186,7 +1215,7 @@ var resetRestaurants = function resetRestaurants(restaurants) {
 
 var fillRestaurantsHTML = function fillRestaurantsHTML() {
   var restaurants = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : self.restaurants;
-  var ul = document.getElementById('restaurants-list');
+  var ul = document.getElementById("restaurants-list");
   restaurants.forEach(function (restaurant) {
     ul.append(createRestaurantHTML(restaurant));
   });
@@ -1198,28 +1227,28 @@ var fillRestaurantsHTML = function fillRestaurantsHTML() {
 
 
 var createRestaurantHTML = function createRestaurantHTML(restaurant) {
-  var li = document.createElement('li');
-  var image = document.createElement('img');
-  image.className = 'restaurant-img';
-  image.classList.add('lazyload');
+  var li = document.createElement("li");
+  var image = document.createElement("img");
+  image.className = "restaurant-img";
+  image.classList.add("lozad");
   image.src = _dbhelper.default.imageUrlForRestaurant(restaurant);
   image.srcset = _dbhelper.default.imageSrcsetForRestaurant(restaurant);
   image.sizes = _dbhelper.default.imageSizesForRestaurant(restaurant);
   image.alt = "".concat(restaurant.name, ", promotional image.");
   li.append(image);
-  var name = document.createElement('h2');
+  var name = document.createElement("h2");
   name.innerHTML = restaurant.name;
   li.append(name);
   var fav = (0, _favoriteButton.default)(restaurant);
   fav.alt = "Save ".concat(restaurant.name, " as a favorite");
   li.append(fav);
-  var neighborhood = document.createElement('p');
+  var neighborhood = document.createElement("p");
   neighborhood.innerHTML = restaurant.neighborhood;
   li.append(neighborhood);
-  var address = document.createElement('p');
-  var addressArray = restaurant.address.split(',');
-  var cityStateZip = document.createElement('p');
-  var more = document.createElement('a');
+  var address = document.createElement("p");
+  var addressArray = restaurant.address.split(",");
+  var cityStateZip = document.createElement("p");
+  var more = document.createElement("a");
 
   var url = _dbhelper.default.urlForRestaurant(restaurant);
 
@@ -1227,17 +1256,17 @@ var createRestaurantHTML = function createRestaurantHTML(restaurant) {
   cityStateZip.innerHTML = "".concat(addressArray[1], ", ").concat(addressArray[2]);
   li.append(address);
   li.append(cityStateZip);
-  more.className = 'view-details-btn';
-  more.innerHTML = 'View Details';
-  more.type = 'Button';
-  more.setAttribute('role', 'button');
-  more.setAttribute('aria-label', "View more details about ".concat(restaurant.name));
+  more.className = "view-details-btn";
+  more.innerHTML = "View Details";
+  more.type = "Button";
+  more.setAttribute("role", "button");
+  more.setAttribute("aria-label", "View more details about ".concat(restaurant.name));
   more.href = url;
-  name.addEventListener('click', function (event) {
+  name.addEventListener("click", function (event) {
     window.location = url;
   });
-  li.setAttribute('aria-label', "".concat(restaurant.name, " is an ").concat(restaurant.cuisine_type, " restaurant in ").concat(restaurant.neighborhood));
-  li.setAttribute('tabindex', '0');
+  li.setAttribute("aria-label", "".concat(restaurant.name, " is an ").concat(restaurant.cuisine_type, " restaurant in ").concat(restaurant.neighborhood));
+  li.setAttribute("tabindex", "0");
   li.append(more);
   return li;
 };
@@ -1248,7 +1277,7 @@ var addMarkersToMap = function addMarkersToMap() {
     // Add marker to the map
     var marker = _dbhelper.default.mapMarkerForRestaurant(restaurant, newMap);
 
-    google.maps.event.addListener(marker, 'click', function () {
+    google.maps.event.addListener(marker, "click", function () {
       window.location.href = marker.url;
     });
     markers.push(marker);
