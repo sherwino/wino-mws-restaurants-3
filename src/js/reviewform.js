@@ -7,8 +7,8 @@ import dbPromise from "./dbpromise";
  */
 function createReviewHTML(review) {
   const li = document.createElement("li");
-  const reviewer = document.createElement("strong");
-  reviewer.innerHTML = review.name;
+  const reviewer = document.createElement("p");
+  reviewer.innerHTML = reviewer.name;
   reviewer.className = 'reviewer';
   reviewer.setAttribute('alt', 'Reviewer name');
   li.appendChild(reviewer);
@@ -95,40 +95,56 @@ function validateAndGetData() {
   return data;
 }
 
+
+
+/**
+ * Grab the review and send it to the dom, while you are at it clear the no reviews el, and clear form
+ */
+function insertReviewAndClear(review) {
+  // post new review on page
+  const reviewList = document.getElementById("reviews-list");
+  const reviewEl = createReviewHTML(review);
+  reviewList.appendChild(reviewEl);
+  //remove noReviews element
+  removeNoReviews();
+
+  // clear form
+  clearForm();
+}
+
 /**
  * Handle submit.
  */
 function handleSubmit(e) {
   e.preventDefault();
   const review = validateAndGetData();
-  if (!review) return;
-
   const url = `${DBHelper.API_URL}/reviews/`;
   const POST = {
     method: "POST",
     body: JSON.stringify(review)
   };
 
+  // If we are offline
+  if(!navigator.onLine) {
+    console.info('App was offline, when you tried to send review');
+    
+    dbPromise.putOfflineReview(review, "review");
+    insertReviewAndClear(review);
+
+  }
+  // If we are online
   return fetch(url, POST)
     .then(response => {
-      if (!response.ok)
+      if (!response.ok) {
         return Promise.reject("We couldn't post review to server.");
+      }
       return response.json();
+    }).catch((err) => {
+      console.info('Disconnected when submitted form');
     })
-    .then(newNetworkReview => {
-      // save new review on idb
-      dbPromise.putReviews(newNetworkReview);
-      // post new review on page
-      const reviewList = document.getElementById("reviews-list");
-      const review = createReviewHTML(newNetworkReview);
-      reviewList.appendChild(review);
-
-      //remove noReviews element
-      removeNoReviews();
-
-      // clear form
-      clearForm();
-    });
+    .then(apiReview => {
+      insertReviewAndClear(apiReview)
+    })
 }
 
 /**

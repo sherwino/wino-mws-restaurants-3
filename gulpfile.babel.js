@@ -56,7 +56,8 @@ gulp.task('responsive:images', function() {
   log(c.cyan('Creating Responsive images...'));
   return gulp.src(paths.responsive.src)
   .pipe(imagemin([imageminMozjpeg({
-    quality: 30
+    quality: 30,
+    progressive: true
 
 })]))
 

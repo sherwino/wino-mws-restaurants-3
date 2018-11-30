@@ -1,6 +1,8 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
+var _this = void 0;
+
 var staticCacheName = "reviews-v1";
 var cacheItems = [// Added all of the PWA items that should be cached like icons, and manifest
 "./", "./css/styles.css", "./css/restaurants.css", "./css/mediaqueries.css", "./restaurant.html", "./index.html", "./js/main.js", "./js/restaurant_info.js", "./manifest.json", "./img/icons/icon-72x72.png", "./img/icons/icon-96x96.png", "./img/icons/icon-128x128.png", "./img/icons/icon-144x144.png", "./img/icons/icon-152x152.png", "./img/icons/icon-192x192.png", "./img/icons/icon-384x384.png", "./img/icons/icon-512x512.png"]; // Listen for when worker is installed, then cache
@@ -43,15 +45,15 @@ self.addEventListener("fetch", function (event) {
     // I saw this elsewhere, my images are not showing up in offline mode going to try this
     if (requestUrl.pathname.endsWith(".jpg")) {
       event.respondWith(cachedImages(event.request));
+    } else {
+      // And respond with a cached version
+      event.respondWith(caches.match(event.request, {
+        ignoreSearch: true
+      }).then(function (res) {
+        return res || fetch(event.request);
+      }));
     }
-  } // And respond with a cached version
-
-
-  event.respondWith(caches.match(event.request, {
-    ignoreSearch: true
-  }).then(function (res) {
-    return res || fetch(event.request);
-  }));
+  }
 }); // This should help me serve images when offline
 // Also this is a mess, but I needed help
 // I should refactor to async await or do something else 
@@ -74,16 +76,13 @@ self.addEventListener("message", function (event) {
   if (event.data.action === "skipWaiting") {
     self.skipWaiting();
   }
-});
+}); // Is this even doing anything
+
 self.addEventListener("sync", function (event) {
   if (event.tag === "restaurantSync") {
-    event.waitUntil(doSomethingHere());
+    event.waitUntil(_this.syncOfflineReviews());
   }
 });
-
-function doSomethingHere() {
-  console.log("I GUESSSS I DID SOMETHING HERE, on SYNC");
-}
 
 },{}]},{},[1])
 

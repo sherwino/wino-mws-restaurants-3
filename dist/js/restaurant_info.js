@@ -376,6 +376,7 @@ function () {
      * Fetch all restaurants.
      */
     value: function fetchRestaurants(callback) {
+      this.syncOfflinefav();
       var xhr = new XMLHttpRequest();
       xhr.open("GET", "".concat(DBHelper.API_URL, "/restaurants"));
 
@@ -422,6 +423,7 @@ function () {
   }, {
     key: "fetchRestaurantById",
     value: function fetchRestaurantById(id, callback) {
+      this.syncOfflineReviews();
       fetch("".concat(DBHelper.API_URL, "/restaurants/").concat(id)).then(function (response) {
         if (!response.ok) return Promise.reject("Restaurant couldn't be fetched from network");
         return response.json();
@@ -447,19 +449,80 @@ function () {
   }, {
     key: "fetchsReviewsByRestaurantId",
     value: function fetchsReviewsByRestaurantId(id) {
-      return fetch("".concat(DBHelper.API_URL, "/reviews/?restaurant_id=").concat(id)).then(function (response) {
-        if (!response.ok) return Promise.reject("Reviews couldn't be fetched from network");
-        return response.json();
-      }).then(function (fetchedReviews) {
-        _dbpromise.default.putReviews(fetchedReviews);
+      return _dbpromise.default.getReviewsForRestaurant(id).then(function (idbReviews) {
+        if (!idbReviews.length) {
+          console.info("No reviews in idb", idbReviews);
+          console.info("Fetching from API");
+          return fetch("".concat(DBHelper.API_URL, "/reviews/?restaurant_id=").concat(id)).then(function (response) {
+            return response.json();
+          }).then(function (fetchedReviews) {
+            console.info("Found Reviews saving to idb");
 
-        return fetchedReviews;
-      }).catch(function (networkError) {
-        console.log("".concat(networkError));
-        return _dbpromise.default.getReviewsForRestaurant(id).then(function (idbReviews) {
-          if (!idbReviews.length) return null;
+            _dbpromise.default.putReviews(fetchedReviews);
+
+            return fetchedReviews;
+          }).catch(function (err) {
+            console.error("Reviews couldn't be fetched from network, sorry.");
+          });
+        } else {
+          console.info("Found reviews on idb");
           return idbReviews;
-        });
+        }
+      });
+    }
+    /**
+     * I have an idb collection of offline messages that need to get online
+     */
+
+  }, {
+    key: "syncOfflineReviews",
+    value: function syncOfflineReviews() {
+      return _dbpromise.default.getOfflineReviews().then(function (reviews) {
+        // If we actually got some reviews, send them to idb, not sure if I send whole object
+        if (reviews) {
+          var url = "".concat(DBHelper.API_URL, "/reviews/");
+          var POST = {
+            method: "POST",
+            body: JSON.stringify(reviews)
+          };
+          return fetch(url, POST).then(function (response) {
+            if (!response.ok) {
+              return Promise.reject("We couldn't post review to server.");
+            }
+
+            console.info("Posted offline reviews to api successfully");
+            return response.json();
+          });
+        }
+
+        return null;
+      });
+    }
+    /**
+    * I have an idb collection of offline messages that need to get online
+    */
+
+  }, {
+    key: "syncOfflinefav",
+    value: function syncOfflinefav() {
+      return _dbpromise.default.getOfflinefavs().then(function (favs) {
+        // If we actually got some favs, send them to idb
+        if (favs) {
+          var url = "".concat(DBHelper.API_URL, "/restaurants/").concat(restaurantId, "/?is_favorite=").concat(!fav);
+          var PUT = {
+            method: "PUT"
+          };
+          return fetch(url, PUT).then(function (response) {
+            if (!response.ok) {
+              return Promise.reject("We couldn't post fav to server.");
+            }
+
+            console.info("Posted offline favs to api successfully");
+            return response.json();
+          });
+        }
+
+        return null;
       });
     }
     /**
@@ -643,7 +706,7 @@ function () {
     get: function get() {
       var port = 1337; // port where sails server will listen.
 
-      var heroku = 'https://winosails.herokuapp.com';
+      var heroku = "https://winosails.herokuapp.com";
 
       var isLocalHost = function isLocalHost() {
         if (window.location.hostname.includes("localhost")) {
@@ -692,6 +755,12 @@ var dbPromise = {
           autoIncrement: true,
           keyPath: "id"
         }).createIndex("restaurant_id", "restaurant_id");
+
+      case 3:
+        upgradeDb.createObjectStore("offline-fav", {
+          autoIncrement: true,
+          keyPath: "id"
+        }).createIndex("restaurant_id", "restaurant_id");
     }
   }),
 
@@ -714,6 +783,20 @@ var dbPromise = {
       })).then(function () {
         return store.complete;
       });
+    });
+  },
+  putFavorite: function putFavorite(id, boolean) {
+    return this.db.then(function (db) {
+      var store = db.transaction("restaurants", "readwrite").objectStore("restaurants");
+      store.get(id).then(function (idbRestaurant) {
+        idbRestaurant.is_favorite = boolean.toString();
+        store.put(idbRestaurant);
+        return store.complete;
+      });
+    }).then(function () {
+      console.info('Updated fav in idb');
+    }).catch(function (err) {
+      console.error('Error updating fav in idb', err);
     });
   },
 
@@ -751,6 +834,68 @@ var dbPromise = {
     return this.db.then(function (db) {
       var storeIndex = db.transaction("reviews").objectStore("reviews").index("restaurant_id");
       return storeIndex.getAll(Number(id));
+    });
+  },
+  // Storing offline reviews to offline idb collection
+  putOfflineReview: function putOfflineReview(review) {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline", "readwrite").objectStore("offline");
+      store.put(review);
+      return store.complete;
+    }).then(function () {
+      console.info('Saved a review to idb while offline'); // navigator.serviceWorker.ready.then(registration => {
+      //   return registration.sync.register("flush");
+      // });
+    });
+  },
+  // Getting whatever I have in the offline idb collection
+  getOfflineReviews: function getOfflineReviews() {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline", "readonly").objectStore("offline");
+      return store.getAll();
+    }).then(function () {
+      console.info('Retrieved offline reviews');
+    });
+  },
+  // Clearing whatever I have in the offline idb collection
+  clearOfflineReviews: function clearOfflineReviews() {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline", "readwrite").objectStore("offline");
+      store.clear();
+      return store;
+    }).then(function (res) {
+      console.warning('Deleted offline reviews', res);
+    });
+  },
+  // Storing offline favs to offline idb collection
+  putOfflinefav: function putOfflinefav(fav) {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline-fav", "readwrite").objectStore("offline-fav");
+      store.put(fav);
+      return store.complete;
+    }).then(function () {
+      console.info('Saved a fav to idb while offline'); // navigator.serviceWorker.ready.then(registration => {
+      //   return registration.sync.register("flush");
+      // });
+    });
+  },
+  // Getting whatever I have in the offline idb collection
+  getOfflinefavs: function getOfflinefavs() {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline-fav", "readonly").objectStore("offline-fav");
+      return store.getAll();
+    }).then(function () {
+      console.info('Retrieved offline favs');
+    });
+  },
+  // Clearing whatever I have in the offline idb collection
+  clearOfflinefavs: function clearOfflinefavs() {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline-fav", "readwrite").objectStore("offline-fav");
+      store.clear();
+      return store;
+    }).then(function (res) {
+      console.warning('Deleted offline favs', res);
     });
   }
 };
@@ -1056,8 +1201,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 function createReviewHTML(review) {
   var li = document.createElement("li");
-  var reviewer = document.createElement("strong");
-  reviewer.innerHTML = review.name;
+  var reviewer = document.createElement("p");
+  reviewer.innerHTML = reviewer.name;
   reviewer.className = 'reviewer';
   reviewer.setAttribute('alt', 'Reviewer name');
   li.appendChild(reviewer);
@@ -1141,6 +1286,21 @@ function validateAndGetData() {
   return data;
 }
 /**
+ * Grab the review and send it to the dom, while you are at it clear the no reviews el, and clear form
+ */
+
+
+function insertReviewAndClear(review) {
+  // post new review on page
+  var reviewList = document.getElementById("reviews-list");
+  var reviewEl = createReviewHTML(review);
+  reviewList.appendChild(reviewEl); //remove noReviews element
+
+  removeNoReviews(); // clear form
+
+  clearForm();
+}
+/**
  * Handle submit.
  */
 
@@ -1148,27 +1308,31 @@ function validateAndGetData() {
 function handleSubmit(e) {
   e.preventDefault();
   var review = validateAndGetData();
-  if (!review) return;
   var url = "".concat(_dbhelper.default.API_URL, "/reviews/");
   var POST = {
     method: "POST",
     body: JSON.stringify(review)
-  };
+  }; // If we are offline
+
+  if (!navigator.onLine) {
+    console.info('App was offline, when you tried to send review');
+
+    _dbpromise.default.putOfflineReview(review, "review");
+
+    insertReviewAndClear(review);
+  } // If we are online
+
+
   return fetch(url, POST).then(function (response) {
-    if (!response.ok) return Promise.reject("We couldn't post review to server.");
+    if (!response.ok) {
+      return Promise.reject("We couldn't post review to server.");
+    }
+
     return response.json();
-  }).then(function (newNetworkReview) {
-    // save new review on idb
-    _dbpromise.default.putReviews(newNetworkReview); // post new review on page
-
-
-    var reviewList = document.getElementById("reviews-list");
-    var review = createReviewHTML(newNetworkReview);
-    reviewList.appendChild(review); //remove noReviews element
-
-    removeNoReviews(); // clear form
-
-    clearForm();
+  }).catch(function (err) {
+    console.info('Disconnected when submitted form');
+  }).then(function (apiReview) {
+    insertReviewAndClear(apiReview);
   });
 }
 /**

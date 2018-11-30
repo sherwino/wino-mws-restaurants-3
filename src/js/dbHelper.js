@@ -10,7 +10,7 @@ export default class DBHelper {
   static get API_URL() {
     const port = 1337; // port where sails server will listen.
 
-    const heroku = 'https://winosails.herokuapp.com';
+    const heroku = "https://winosails.herokuapp.com";
     const isLocalHost = () => {
       if (window.location.hostname.includes("localhost")) {
         return `http://localhost:${port}`;
@@ -22,11 +22,11 @@ export default class DBHelper {
     return url;
   }
 
-
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
+    this.syncOfflinefav()
     let xhr = new XMLHttpRequest();
     xhr.open("GET", `${DBHelper.API_URL}/restaurants`);
     xhr.onload = () => {
@@ -68,6 +68,7 @@ export default class DBHelper {
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
+    this.syncOfflineReviews();
     fetch(`${DBHelper.API_URL}/restaurants/${id}`)
       .then(response => {
         if (!response.ok)
@@ -94,24 +95,77 @@ export default class DBHelper {
    * Fetch restaurant reviews by restaurant id.
    */
   static fetchsReviewsByRestaurantId(id) {
-    return fetch(`${DBHelper.API_URL}/reviews/?restaurant_id=${id}`)
-      .then(response => {
-        if (!response.ok)
-          return Promise.reject("Reviews couldn't be fetched from network");
-        return response.json();
-      })
-      .then(fetchedReviews => {
-        dbPromise.putReviews(fetchedReviews);
-        return fetchedReviews;
-      })
-      .catch(networkError => {
-        console.log(`${networkError}`);
-        return dbPromise.getReviewsForRestaurant(id)
-        .then(idbReviews => {
-          if(!idbReviews.length) return null;
-          return idbReviews;
+    return dbPromise.getReviewsForRestaurant(id).then(idbReviews => {
+      if (!idbReviews.length) {
+        console.info("No reviews in idb", idbReviews);
+        console.info("Fetching from API");
+
+        return fetch(`${DBHelper.API_URL}/reviews/?restaurant_id=${id}`)
+          .then(response => response.json())
+          .then(fetchedReviews => {
+            console.info("Found Reviews saving to idb");
+            dbPromise.putReviews(fetchedReviews);
+
+            return fetchedReviews;
+          })
+          .catch(err => {
+            console.error("Reviews couldn't be fetched from network, sorry.");
+          });
+      } else {
+        console.info("Found reviews on idb");
+
+        return idbReviews;
+      }
+    });
+  }
+
+  /**
+   * I have an idb collection of offline messages that need to get online
+   */
+  static syncOfflineReviews() {
+    return dbPromise.getOfflineReviews().then(reviews => {
+      // If we actually got some reviews, send them to idb, not sure if I send whole object
+      if (reviews) {
+        const url = `${DBHelper.API_URL}/reviews/`;
+        const POST = {
+          method: "POST",
+          body: JSON.stringify(reviews)
+        };
+
+        return fetch(url, POST).then(response => {
+          if (!response.ok) {
+            return Promise.reject("We couldn't post review to server.");
+          }
+          console.info("Posted offline reviews to api successfully");
+          return response.json();
         });
-      });
+      }
+      return null;
+    });
+  }
+
+    /**
+   * I have an idb collection of offline messages that need to get online
+   */
+  static syncOfflinefav() {
+    return dbPromise.getOfflinefavs().then(favs => {
+      // If we actually got some favs, send them to idb
+      if (favs) {
+        const url = `${DBHelper.API_URL}/restaurants/${restaurantId}/?is_favorite=${!fav}`;
+        const PUT = {
+          method: "PUT",
+        };
+
+        return fetch(url, PUT).then(response => {
+          if (!response.ok) {
+            return Promise.reject("We couldn't post fav to server.");
+          }
+          console.info("Posted offline favs to api successfully");
+          return response.json();
+        });
+      }
+      return null;
+    });
   }
 
   /**
@@ -226,8 +280,8 @@ export default class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-      const url = `./img/${restaurant.photograph || restaurant.id}-medium.jpg`;
-  
+    const url = `./img/${restaurant.photograph || restaurant.id}-medium.jpg`;
+
     return url;
   }
 

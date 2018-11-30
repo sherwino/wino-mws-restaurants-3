@@ -376,6 +376,7 @@ function () {
      * Fetch all restaurants.
      */
     value: function fetchRestaurants(callback) {
+      this.syncOfflinefav();
       var xhr = new XMLHttpRequest();
       xhr.open("GET", "".concat(DBHelper.API_URL, "/restaurants"));
 
@@ -422,6 +423,7 @@ function () {
   }, {
     key: "fetchRestaurantById",
     value: function fetchRestaurantById(id, callback) {
+      this.syncOfflineReviews();
       fetch("".concat(DBHelper.API_URL, "/restaurants/").concat(id)).then(function (response) {
         if (!response.ok) return Promise.reject("Restaurant couldn't be fetched from network");
         return response.json();
@@ -447,19 +449,80 @@ function () {
   }, {
     key: "fetchsReviewsByRestaurantId",
     value: function fetchsReviewsByRestaurantId(id) {
-      return fetch("".concat(DBHelper.API_URL, "/reviews/?restaurant_id=").concat(id)).then(function (response) {
-        if (!response.ok) return Promise.reject("Reviews couldn't be fetched from network");
-        return response.json();
-      }).then(function (fetchedReviews) {
-        _dbpromise.default.putReviews(fetchedReviews);
+      return _dbpromise.default.getReviewsForRestaurant(id).then(function (idbReviews) {
+        if (!idbReviews.length) {
+          console.info("No reviews in idb", idbReviews);
+          console.info("Fetching from API");
+          return fetch("".concat(DBHelper.API_URL, "/reviews/?restaurant_id=").concat(id)).then(function (response) {
+            return response.json();
+          }).then(function (fetchedReviews) {
+            console.info("Found Reviews saving to idb");
 
-        return fetchedReviews;
-      }).catch(function (networkError) {
-        console.log("".concat(networkError));
-        return _dbpromise.default.getReviewsForRestaurant(id).then(function (idbReviews) {
-          if (!idbReviews.length) return null;
+            _dbpromise.default.putReviews(fetchedReviews);
+
+            return fetchedReviews;
+          }).catch(function (err) {
+            console.error("Reviews couldn't be fetched from network, sorry.");
+          });
+        } else {
+          console.info("Found reviews on idb");
           return idbReviews;
-        });
+        }
+      });
+    }
+    /**
+     * I have an idb collection of offline messages that need to get online
+     */
+
+  }, {
+    key: "syncOfflineReviews",
+    value: function syncOfflineReviews() {
+      return _dbpromise.default.getOfflineReviews().then(function (reviews) {
+        // If we actually got some reviews, send them to idb, not sure if I send whole object
+        if (reviews) {
+          var url = "".concat(DBHelper.API_URL, "/reviews/");
+          var POST = {
+            method: "POST",
+            body: JSON.stringify(reviews)
+          };
+          return fetch(url, POST).then(function (response) {
+            if (!response.ok) {
+              return Promise.reject("We couldn't post review to server.");
+            }
+
+            console.info("Posted offline reviews to api successfully");
+            return response.json();
+          });
+        }
+
+        return null;
+      });
+    }
+    /**
+    * I have an idb collection of offline messages that need to get online
+    */
+
+  }, {
+    key: "syncOfflinefav",
+    value: function syncOfflinefav() {
+      return _dbpromise.default.getOfflinefavs().then(function (favs) {
+        // If we actually got some favs, send them to idb
+        if (favs) {
+          var url = "".concat(DBHelper.API_URL, "/restaurants/").concat(restaurantId, "/?is_favorite=").concat(!fav);
+          var PUT = {
+            method: "PUT"
+          };
+          return fetch(url, PUT).then(function (response) {
+            if (!response.ok) {
+              return Promise.reject("We couldn't post fav to server.");
+            }
+
+            console.info("Posted offline favs to api successfully");
+            return response.json();
+          });
+        }
+
+        return null;
       });
     }
     /**
@@ -643,7 +706,7 @@ function () {
     get: function get() {
       var port = 1337; // port where sails server will listen.
 
-      var heroku = 'https://winosails.herokuapp.com';
+      var heroku = "https://winosails.herokuapp.com";
 
       var isLocalHost = function isLocalHost() {
         if (window.location.hostname.includes("localhost")) {
@@ -692,6 +755,12 @@ var dbPromise = {
           autoIncrement: true,
           keyPath: "id"
         }).createIndex("restaurant_id", "restaurant_id");
+
+      case 3:
+        upgradeDb.createObjectStore("offline-fav", {
+          autoIncrement: true,
+          keyPath: "id"
+        }).createIndex("restaurant_id", "restaurant_id");
     }
   }),
 
@@ -714,6 +783,20 @@ var dbPromise = {
       })).then(function () {
         return store.complete;
       });
+    });
+  },
+  putFavorite: function putFavorite(id, boolean) {
+    return this.db.then(function (db) {
+      var store = db.transaction("restaurants", "readwrite").objectStore("restaurants");
+      store.get(id).then(function (idbRestaurant) {
+        idbRestaurant.is_favorite = boolean.toString();
+        store.put(idbRestaurant);
+        return store.complete;
+      });
+    }).then(function () {
+      console.info('Updated fav in idb');
+    }).catch(function (err) {
+      console.error('Error updating fav in idb', err);
     });
   },
 
@@ -752,6 +835,68 @@ var dbPromise = {
       var storeIndex = db.transaction("reviews").objectStore("reviews").index("restaurant_id");
       return storeIndex.getAll(Number(id));
     });
+  },
+  // Storing offline reviews to offline idb collection
+  putOfflineReview: function putOfflineReview(review) {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline", "readwrite").objectStore("offline");
+      store.put(review);
+      return store.complete;
+    }).then(function () {
+      console.info('Saved a review to idb while offline'); // navigator.serviceWorker.ready.then(registration => {
+      //   return registration.sync.register("flush");
+      // });
+    });
+  },
+  // Getting whatever I have in the offline idb collection
+  getOfflineReviews: function getOfflineReviews() {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline", "readonly").objectStore("offline");
+      return store.getAll();
+    }).then(function () {
+      console.info('Retrieved offline reviews');
+    });
+  },
+  // Clearing whatever I have in the offline idb collection
+  clearOfflineReviews: function clearOfflineReviews() {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline", "readwrite").objectStore("offline");
+      store.clear();
+      return store;
+    }).then(function (res) {
+      console.warning('Deleted offline reviews', res);
+    });
+  },
+  // Storing offline favs to offline idb collection
+  putOfflinefav: function putOfflinefav(fav) {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline-fav", "readwrite").objectStore("offline-fav");
+      store.put(fav);
+      return store.complete;
+    }).then(function () {
+      console.info('Saved a fav to idb while offline'); // navigator.serviceWorker.ready.then(registration => {
+      //   return registration.sync.register("flush");
+      // });
+    });
+  },
+  // Getting whatever I have in the offline idb collection
+  getOfflinefavs: function getOfflinefavs() {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline-fav", "readonly").objectStore("offline-fav");
+      return store.getAll();
+    }).then(function () {
+      console.info('Retrieved offline favs');
+    });
+  },
+  // Clearing whatever I have in the offline idb collection
+  clearOfflinefavs: function clearOfflinefavs() {
+    return this.db.then(function (db) {
+      var store = db.transaction("offline-fav", "readwrite").objectStore("offline-fav");
+      store.clear();
+      return store;
+    }).then(function (res) {
+      console.warning('Deleted offline favs', res);
+    });
   }
 };
 var _default = dbPromise;
@@ -771,37 +916,47 @@ var _dbpromise = _interopRequireDefault(require("./dbpromise"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function handleClick() {
+function handleClick(e) {
   var _this = this;
 
+  e.preventDefault();
   var restaurantId = this.dataset.id;
   var fav = this.getAttribute('aria-pressed') == 'true';
   var url = "".concat(_dbhelper.default.API_URL, "/restaurants/").concat(restaurantId, "/?is_favorite=").concat(!fav);
   var PUT = {
     method: 'PUT'
-  }; // TODO: use Background Sync to sync data with API server
+  }; // If we are offline
 
-  return fetch(url, PUT).then(function (response) {
-    if (!response.ok) return Promise.reject("We couldn't mark restaurant as favorite.");
-    return response.json();
-  }).then(function (updatedRestaurant) {
-    // update restaurant on idb
-    _dbpromise.default.putRestaurants(updatedRestaurant, true); // change state of toggle button
+  if (!navigator.onLine) {
+    console.info('App was offline, when you tried to send fav');
+
+    _dbpromise.default.putOfflinefav(!fav);
+
+    this.setAttribute('aria-pressed', !fav);
+  } else {
+    // If we are online
+    return fetch(url, PUT).then(function (response) {
+      return response.json();
+    }).then(function (updatedRestaurant) {
+      // update restaurant on idb
+      _dbpromise.default.putRestaurants(updatedRestaurant, true); // change state of toggle button
 
 
-    _this.setAttribute('aria-pressed', !fav);
-  });
+      _this.setAttribute('aria-pressed', !fav);
+
+      return updatedRestaurant;
+    }).catch(function (err) {
+      console.error('Couldnt update fav in API', err);
+    });
+  }
 }
 
 function favoriteButton(restaurant) {
   var button = document.createElement('button');
-  button.innerHTML = "&#x2764;"; // this is the heart symbol in hex code
-
-  button.className = "fav"; // you can use this class name to style your button
-
-  button.dataset.id = restaurant.id; // store restaurant id in dataset for later
-
-  button.setAttribute('aria-label', "Mark ".concat(restaurant.name, " as a favorite"));
+  button.innerHTML = "&#x2764;";
+  button.className = "fav-restaurant";
+  button.dataset.id = restaurant.id;
+  button.setAttribute('aria-label', "Save ".concat(restaurant.name, " as a favorite"));
   button.setAttribute('aria-pressed', restaurant.is_favorite);
   button.onclick = handleClick;
   return button;
@@ -821,37 +976,47 @@ var _dbpromise = _interopRequireDefault(require("./dbpromise"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function handleClick() {
+function handleClick(e) {
   var _this = this;
 
+  e.preventDefault();
   var restaurantId = this.dataset.id;
   var fav = this.getAttribute('aria-pressed') == 'true';
   var url = "".concat(_dbhelper.default.API_URL, "/restaurants/").concat(restaurantId, "/?is_favorite=").concat(!fav);
   var PUT = {
     method: 'PUT'
-  }; // TODO: use Background Sync to sync data with API server
+  }; // If we are offline
 
-  return fetch(url, PUT).then(function (response) {
-    if (!response.ok) return Promise.reject("We couldn't mark restaurant as favorite.");
-    return response.json();
-  }).then(function (updatedRestaurant) {
-    // update restaurant on idb
-    _dbpromise.default.putRestaurants(updatedRestaurant, true); // change state of toggle button
+  if (!navigator.onLine) {
+    console.info('App was offline, when you tried to send fav');
+
+    _dbpromise.default.putOfflinefav(!fav);
+
+    this.setAttribute('aria-pressed', !fav);
+  } else {
+    // If we are online
+    return fetch(url, PUT).then(function (response) {
+      return response.json();
+    }).then(function (updatedRestaurant) {
+      // update restaurant on idb
+      _dbpromise.default.putRestaurants(updatedRestaurant, true); // change state of toggle button
 
 
-    _this.setAttribute('aria-pressed', !fav);
-  });
+      _this.setAttribute('aria-pressed', !fav);
+
+      return updatedRestaurant;
+    }).catch(function (err) {
+      console.error('Couldnt update fav in API', err);
+    });
+  }
 }
 
 function favoriteButton(restaurant) {
   var button = document.createElement('button');
-  button.innerHTML = "&#x2764;"; // this is the heart symbol in hex code
-
-  button.className = "fav"; // you can use this class name to style your button
-
-  button.dataset.id = restaurant.id; // store restaurant id in dataset for later
-
-  button.setAttribute('aria-label', "Mark ".concat(restaurant.name, " as a favorite"));
+  button.innerHTML = "&#x2764;";
+  button.className = "fav-restaurant";
+  button.dataset.id = restaurant.id;
+  button.setAttribute('aria-label', "Save ".concat(restaurant.name, " as a favorite"));
   button.setAttribute('aria-pressed', restaurant.is_favorite);
   button.onclick = handleClick;
   return button;
@@ -1046,7 +1211,6 @@ var createRestaurantHTML = function createRestaurantHTML(restaurant) {
   li.append(name);
   var fav = (0, _favoriteButton.default)(restaurant);
   fav.alt = "Save ".concat(restaurant.name, " as a favorite");
-  fav.className = 'fav-restaurant';
   li.append(fav);
   var neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
@@ -1068,7 +1232,7 @@ var createRestaurantHTML = function createRestaurantHTML(restaurant) {
   more.setAttribute('role', 'button');
   more.setAttribute('aria-label', "View more details about ".concat(restaurant.name));
   more.href = url;
-  li.addEventListener('click', function (event) {
+  name.addEventListener('click', function (event) {
     window.location = url;
   });
   li.setAttribute('aria-label', "".concat(restaurant.name, " is an ").concat(restaurant.cuisine_type, " restaurant in ").concat(restaurant.neighborhood));

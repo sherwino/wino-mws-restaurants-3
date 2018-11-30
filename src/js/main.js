@@ -172,7 +172,6 @@ const createRestaurantHTML = (restaurant) => {
 
   const fav = favoriteButton(restaurant);
   fav.alt = `Save ${restaurant.name} as a favorite`;
-  fav.className = 'fav-restaurant';
   li.append(fav);
 
   const neighborhood = document.createElement('p');
@@ -197,7 +196,7 @@ const createRestaurantHTML = (restaurant) => {
   more.setAttribute('role', 'button');
   more.setAttribute('aria-label', `View more details about ${restaurant.name}`)
   more.href = url;
-  li.addEventListener('click', (event) => {
+  name.addEventListener('click', (event) => {
     window.location = url;
   });
 

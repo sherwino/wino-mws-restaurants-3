@@ -196,6 +196,10 @@ nav h1 a {
   background: #f29d00;
 }
 
+.fav-restaurant {
+  margin: 0.5em 1em;
+
+}
 .fav-restaurant:hover {
   color: #f29d00;
 }
@@ -204,7 +208,7 @@ nav h1 a {
   color: #f29d00;
 }
 
-.fav-restaurant[aria-checked="true"] {
+.fav-restaurant[aria-pressed="true"] {
   color: #f29d00;
 }
 

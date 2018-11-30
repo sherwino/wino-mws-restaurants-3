@@ -75,15 +75,18 @@ self.addEventListener("fetch", event => {
     // I saw this elsewhere, my images are not showing up in offline mode going to try this
     if (requestUrl.pathname.endsWith(".jpg")) {
       event.respondWith(cachedImages(event.request));
-    }
-  }
-
-  // And respond with a cached version
+    } else {
+        // And respond with a cached version
   event.respondWith(
     caches
       .match(event.request, { ignoreSearch: true })
       .then(res => res || fetch(event.request))
   );
+
+    }
+  }
+
+
 });
 
 // This should help me serve images when offline
@@ -111,12 +114,9 @@ self.addEventListener("message", event => {
   }
 });
 
+// Is this even doing anything
 self.addEventListener("sync", event => {
   if (event.tag === "restaurantSync") {
-    event.waitUntil(doSomethingHere());
+    event.waitUntil(this.syncOfflineReviews());
   }
 });
-
-function doSomethingHere() {
-  console.log("I GUESSSS I DID SOMETHING HERE, on SYNC");
-}
