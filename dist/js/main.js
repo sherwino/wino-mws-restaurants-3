@@ -1201,6 +1201,7 @@ var createRestaurantHTML = function createRestaurantHTML(restaurant) {
   var li = document.createElement('li');
   var image = document.createElement('img');
   image.className = 'restaurant-img';
+  image.classList.add('lazyload');
   image.src = _dbhelper.default.imageUrlForRestaurant(restaurant);
   image.srcset = _dbhelper.default.imageSrcsetForRestaurant(restaurant);
   image.sizes = _dbhelper.default.imageSizesForRestaurant(restaurant);

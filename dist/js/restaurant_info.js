@@ -1050,6 +1050,7 @@ var fillRestaurantHTML = function fillRestaurantHTML() {
   address.innerHTML = restaurant.address;
   var image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img';
+  image.classList.add = 'lazyload';
   image.src = _dbhelper.default.imageUrlForRestaurant(restaurant);
   image.srcset = _dbhelper.default.imageSrcsetForRestaurant(restaurant);
   image.sizes = _dbhelper.default.imageSizesForRestaurant(restaurant);

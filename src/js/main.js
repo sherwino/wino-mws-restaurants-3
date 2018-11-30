@@ -160,6 +160,7 @@ const createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
   const image = document.createElement('img');
   image.className = 'restaurant-img';
+  image.classList.add('lazyload');
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
   image.srcset = DBHelper.imageSrcsetForRestaurant(restaurant);
   image.sizes = DBHelper.imageSizesForRestaurant(restaurant);
