@@ -17,8 +17,8 @@ var markers = [];
 document.addEventListener("DOMContentLoaded", event => {
   fetchNeighborhoods();
   fetchCuisines();
-  const observer = lozad(); // lazy loads elements with default selector as '.lozad'
-  observer.observe();
+  // const observer = lozad(); // lazy loads elements with default selector as '.lozad'
+  // observer.observe();
 });
 
 /**

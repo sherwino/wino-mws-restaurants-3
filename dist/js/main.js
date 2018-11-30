@@ -1139,10 +1139,8 @@ var markers = [];
 
 document.addEventListener("DOMContentLoaded", function (event) {
   fetchNeighborhoods();
-  fetchCuisines();
-  var observer = lozad(); // lazy loads elements with default selector as '.lozad'
-
-  observer.observe();
+  fetchCuisines(); // const observer = lozad(); // lazy loads elements with default selector as '.lozad'
+  // observer.observe();
 });
 /**
  * Fetch all neighborhoods and set their HTML.
